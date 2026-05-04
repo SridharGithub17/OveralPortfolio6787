@@ -18,6 +18,14 @@ export const Overview = ({props, maint, finances, settings, setTab}) => {
     + (finances.retirement||[]).reduce((s,x)=>s+(+x.balance||0),0)
     + (finances.metals||[]).reduce((s,x)=>s+(+x.value||0),0);
   const netWorth = totalEquity + finTotal;
+  const investmentCategories = [
+    { name: 'Real Estate', value: totalEquity, color: '#1F3A5F' },
+    { name: 'Savings', value: (finances.savings || []).reduce((s,x)=>s+(+x.balance||0),0), color: '#2E7D8F' },
+    { name: 'Investments', value: (finances.investments || []).reduce((s,x)=>s+(+x.value||0),0), color: '#5BA4B8' },
+    { name: 'Retirement', value: (finances.retirement || []).reduce((s,x)=>s+(+x.balance||0),0), color: '#C9A227' },
+    { name: 'Metals', value: (finances.metals || []).reduce((s,x)=>s+(+x.value||0),0), color: '#8B6914' },
+  ].filter(category => category.value > 0);
+  const totalInvestment = investmentCategories.reduce((sum, category) => sum + category.value, 0);
 
   const alerts = [];
   maint.forEach(m => {
@@ -43,6 +51,39 @@ export const Overview = ({props, maint, finances, settings, setTab}) => {
         <KPI label="Portfolio Cap" value={fmtPct(portCap)} />
         <KPI label="Refi Opps" value={refiCount} sub={refiCount?'See Refi tab':'No action'} />
         <KPI label="Maint Overdue" value={overdueMaint} sub={overdueMaint?'Address ASAP':'All clear'} />
+      </div>
+
+      <div className="card">
+        <h3>Investment Allocation</h3>
+        {totalInvestment === 0 ? (
+          <div className="empty">Add real estate or finance balances to see the investment chart.</div>
+        ) : (
+          <>
+            <div className="net-bar" style={{ marginBottom: 16 }}>
+              {investmentCategories.map((category) => (
+                <div
+                  key={category.name}
+                  style={{
+                    background: category.color,
+                    flex: category.value,
+                    minWidth: category.value / totalInvestment > 0.06 ? 'auto' : '0'
+                  }}
+                  title={`${category.name}: ${fmtMoney(category.value)} (${fmtPct1(category.value / totalInvestment)})`}
+                >
+                  {category.value / totalInvestment > 0.08 ? fmtPct1(category.value / totalInvestment) : ''}
+                </div>
+              ))}
+            </div>
+            {investmentCategories.map((category) => (
+              <div className="alloc-row" key={category.name}>
+                <span className="swatch" style={{ background: category.color }}></span>
+                <div className="name">{category.name}</div>
+                <div className="val">{fmtMoney(category.value)}</div>
+                <div className="pct">{fmtPct1(category.value / totalInvestment)}</div>
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
       <div className="card">

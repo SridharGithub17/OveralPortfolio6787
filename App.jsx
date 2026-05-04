@@ -29,6 +29,7 @@ import { LockScreen } from './LockScreen.jsx';
 
 export default function App() {
   const [mode, setMode] = useState('loading');
+  const [authMode, setAuthMode] = useState('login');
   const [cryptoKey, setCryptoKey] = useState(null);
   const [salt, setSalt] = useState(null);
   const [unlockErr, setUnlockErr] = useState('');
@@ -52,6 +53,7 @@ export default function App() {
         setBackendState(state);
 
         if (state.mode === 'encrypted' && state.vault) {
+          setAuthMode('login');
           setMode('locked');
           return;
         }
@@ -62,6 +64,7 @@ export default function App() {
         setOhio(state.ohio || []);
         setFinances({ ...DEFAULT_FINANCES, ...(state.finances || {}) });
         setSettings(mergeSettings(state.settings));
+        setAuthMode('signup');
         setMode('plain');
       } catch (e) {
         console.error('Failed to load backend state', e);
@@ -122,7 +125,8 @@ export default function App() {
     }
   };
 
-  const handleUnlock = async (password) => {
+  const handleUnlock = async (password, username) => {
+    setAuthMode('login');
     setUnlockErr('');
     setUnlockBusy(true);
     try {
@@ -147,7 +151,8 @@ export default function App() {
     }
   };
 
-  const handleSetup = async (password) => {
+  const handleSetup = async (password, username) => {
+    setAuthMode('signup');
     setUnlockErr('');
     setUnlockBusy(true);
     try {
@@ -171,9 +176,9 @@ export default function App() {
       setOhio(data.ohio);
       setFinances(data.finances);
       setSettings(data.settings);
-      setMode('unlocked');
-      setTab('overview');
-    } catch (e) {
+        setMode('unlocked');
+        setTab('overview');
+      } catch (e) {
       setUnlockErr(`Setup failed: ${e.message}`);
     } finally {
       setUnlockBusy(false);
@@ -181,6 +186,7 @@ export default function App() {
   };
 
   const handleSkip = () => {
+    setAuthMode('signup');
     const d = backendState;
     setProps(d.props || []);
     setMaint(d.maint || []);
@@ -339,6 +345,8 @@ export default function App() {
   const lockNow = () => {
     setCryptoKey(null);
     setSalt(null);
+    setUnlockErr('');
+    setAuthMode('login');
     setMode('locked');
     setTab('overview');
   };
@@ -392,6 +400,7 @@ export default function App() {
     return (
       <LockScreen
         mode={mode}
+        authMode={authMode}
         onUnlock={handleUnlock}
         onSetup={handleSetup}
         onSkip={handleSkip}
@@ -444,7 +453,7 @@ export default function App() {
 
   return (
     <div id="root-inner" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Header />
+      <Header onSignOut={lockNow} showSignOut={mode === 'unlocked'} />
       <div className="layout">
         <SideNav tab={tab} setTab={setTab} />
         <main>

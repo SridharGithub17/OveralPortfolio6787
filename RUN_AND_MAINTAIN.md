@@ -304,3 +304,21 @@ Preview build:
 ```bash
 npm run preview
 ```
+To access this from other system use the below commands:
+Fastest working command pattern:
+
+backend: npm run server
+frontend: npm run dev -- --host
+then browse to http://YOUR-PC-IP:5173/app.html
+
+Output:
+ ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.1.214:5173/
+
+  If the backend is also needed remotely, use the same PC IP on port 3001 and ensure firewall access is allowed.
+
+  If you want a clean permanent setup, the two code changes are:
+
+update storage.js to use the current hostname instead of localhost
+update CORS handling in server.js so requests from http://YOUR-PC-IP:5173 are allowed
+After that, the existing data in portfolio.db will be visible from any device on your local network using your PC IP.

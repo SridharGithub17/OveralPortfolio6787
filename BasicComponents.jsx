@@ -1,9 +1,28 @@
 import React from 'react';
 
-export const Header = () => (
-  <header>
-    <h1>Portfolio Hub</h1>
-    <p>Real estate · personal finances · net worth</p>
+export const Header = ({ onSignOut, showSignOut = false }) => (
+  <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+    <div>
+      <h1>Portfolio Hub</h1>
+      <p>Real estate · personal finances · net worth</p>
+    </div>
+    {showSignOut && (
+      <button
+        type="button"
+        onClick={onSignOut}
+        style={{
+          padding: '8px 12px',
+          borderRadius: 8,
+          border: '1px solid #1F3A5F',
+          background: '#fff',
+          color: '#1F3A5F',
+          fontWeight: 600,
+          cursor: 'pointer'
+        }}
+      >
+        Sign out
+      </button>
+    )}
   </header>
 );
 

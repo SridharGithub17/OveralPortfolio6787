@@ -6,7 +6,8 @@ const Database = require('better-sqlite3');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const DB_PATH = path.join(__dirname, 'portfolio.db');
-const ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const HOST = process.env.HOST || '0.0.0.0';
+const ORIGIN = process.env.CLIENT_ORIGIN || 'http://192.168.1.214:5173';
 
 const DEFAULT_SETTINGS = {
   marketRate30: 0.0668,
@@ -117,6 +118,7 @@ app.post('/api/reset', (_req, res) => {
   res.json(saveState(DEFAULT_DATA));
 });
 
-app.listen(PORT, () => {
-  console.log(`SQLite backend listening on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`SQLite backend listening on http://${HOST}:${PORT}`);
+  console.log(`CORS allowed origin: ${ORIGIN}`);
 });

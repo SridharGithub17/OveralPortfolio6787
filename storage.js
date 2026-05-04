@@ -32,7 +32,7 @@ export const DEFAULT_STATE = {
   settings: DEFAULT_SETTINGS,
 };
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = import.meta.env.VITE_API_BASE || `${window.location.protocol}//${window.location.hostname}:3001/api`;
 
 export const mergeSettings = (incoming = {}) => ({
   ...DEFAULT_SETTINGS,
