@@ -1,0 +1,8 @@
+git config --get credential.username; git config --global --get credential.username; git config --list | findstr /I github
+remote.origin.url=https://github.com/SridharGithub17/OveralPortfolio6787.git
+PS C:\Users\18482\Desktop\Sridhar_docs\RealEstate\Git\OveralPortfolio6787> cmdkey /list | findstr /I github
+    Target: LegacyGeneric:target=git:https://github.com
+PS C:\Users\18482\Desktop\Sridhar_docs\RealEstate\Git\OveralPortfolio6787> cmdkey /delete:LegacyGeneric:target=git:https://github.com
+
+CMDKEY: Credential deleted successfully.
+PS C:\Users\18482\Desktop\Sridhar_docs\RealEstate\Git\OveralPortfolio6787> git push -u origin master
