@@ -7,7 +7,22 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const DB_PATH = path.join(__dirname, 'portfolio.db');
 const HOST = process.env.HOST || '0.0.0.0';
-const ORIGIN = process.env.CLIENT_ORIGIN || 'http://192.168.1.214:5173';
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || '';
+const DEV_PORT = process.env.DEV_PORT || '5173';
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (CLIENT_ORIGIN && origin === CLIENT_ORIGIN) return true;
+
+  try {
+    const parsed = new URL(origin);
+    const isLocalHost = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
+    const isPrivateNetworkHost = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(parsed.hostname);
+    return parsed.protocol.startsWith('http') && parsed.port === DEV_PORT && (isLocalHost || isPrivateNetworkHost);
+  } catch {
+    return false;
+  }
+};
 
 const DEFAULT_SETTINGS = {
   marketRate30: 0.0668,
@@ -96,13 +111,27 @@ const saveState = (state) => {
 
 app.use(express.json({ limit: '10mb' }));
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', ORIGIN);
+  const origin = req.headers.origin;
+  if (isAllowedOrigin(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') {
+    if (!isAllowedOrigin(origin)) {
+      res.status(403).end();
+      return;
+    }
     res.status(204).end();
     return;
   }
+
+  if (!isAllowedOrigin(origin)) {
+    res.status(403).json({ error: 'Origin not allowed' });
+    return;
+  }
+
   next();
 });
 
@@ -120,5 +149,5 @@ app.post('/api/reset', (_req, res) => {
 
 app.listen(PORT, HOST, () => {
   console.log(`SQLite backend listening on http://${HOST}:${PORT}`);
-  console.log(`CORS allowed origin: ${ORIGIN}`);
+  console.log(`CORS allowed origin override: ${CLIENT_ORIGIN || 'auto-detect localhost/private-network clients on dev port'}`);
 });
