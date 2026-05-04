@@ -1,0 +1,22 @@
+{
+  "name": "portfolio-react-local",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "server": "node server.js",
+    "dev:full": "start cmd /k node server.js && vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "express": "^4.21.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

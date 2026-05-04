@@ -1,0 +1,1540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portfolio Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1F3A5F">
+<style>
+  :root {
+    --navy:#1F3A5F; --teal:#2E7D8F; --gold:#C9A227; --bg:#F4F6F9; --card:#FFFFFF;
+    --ink:#1B1F23; --muted:#5C6B7A; --line:#E1E7EE;
+    --green:#1E8E3E; --green-bg:#E6F4EA;
+    --amber:#B06A00; --amber-bg:#FFF1D6;
+    --red:#C5221F; --red-bg:#FCE8E6;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bot: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Segoe UI,Roboto,sans-serif;
+    font-size:14px;line-height:1.4;overscroll-behavior-y:none}
+  #root{min-height:100vh;display:flex;flex-direction:column}
+  header{background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;
+    padding:calc(var(--safe-top) + 14px) 18px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);
+    position:sticky;top:0;z-index:10}
+  header h1{margin:0 0 2px;font-size:18px;font-weight:600;letter-spacing:.2px}
+  header p{margin:0;opacity:.85;font-size:12px}
+  .layout{display:flex;flex:1}
+  nav.side{width:220px;background:#fff;border-right:1px solid var(--line);padding:12px 0;display:none}
+  nav.side button{display:block;width:100%;text-align:left;background:none;border:0;padding:11px 22px;
+    cursor:pointer;color:var(--ink);font-size:14px;border-left:3px solid transparent}
+  nav.side button:hover{background:var(--bg)}
+  nav.side button.active{border-left-color:var(--gold);background:var(--bg);font-weight:600;color:var(--navy)}
+
+  nav.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;padding:6px 4px calc(6px + var(--safe-bot));z-index:20;
+    overflow-x:auto;-webkit-overflow-scrolling:touch}
+  nav.bottom button{flex:0 0 auto;min-width:64px;background:none;border:0;padding:6px 8px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:10px;
+    border-radius:8px;font-weight:500}
+  nav.bottom button .icon{font-size:18px;line-height:1}
+  nav.bottom button.active{color:var(--navy);background:var(--bg)}
+  nav.bottom button.active .icon{transform:scale(1.05)}
+
+  main{flex:1;padding:14px;padding-bottom:90px;overflow-x:hidden}
+  h2{margin:0 0 12px;color:var(--navy);font-size:18px;font-weight:600}
+  h3{margin:18px 0 8px;color:var(--navy);font-size:14px;font-weight:600}
+  .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .kpi .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .kpi .value{font-size:18px;font-weight:600;color:var(--navy);margin-top:3px;word-break:break-word}
+  .kpi .sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+  .card h3:first-child{margin-top:0}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{background:var(--navy);color:#fff;text-align:left;padding:7px 8px;font-weight:600;font-size:11px;
+    position:sticky;top:0}
+  td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tr:nth-child(even) td{background:#FAFBFD}
+  .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;white-space:nowrap}
+  .pill-green{background:var(--green-bg);color:var(--green)}
+  .pill-amber{background:var(--amber-bg);color:var(--amber)}
+  .pill-red{background:var(--red-bg);color:var(--red)}
+  .pill-gray{background:#EEF1F5;color:#5C6B7A}
+  .badge-score{display:inline-block;min-width:34px;text-align:center;padding:3px 6px;border-radius:5px;
+    font-weight:700;font-size:11px}
+  button.primary{background:var(--navy);color:#fff;border:0;padding:10px 16px;border-radius:8px;
+    cursor:pointer;font-size:13px;font-weight:500}
+  button.primary:active{background:var(--teal)}
+  button.ghost{background:transparent;color:var(--navy);border:1px solid var(--navy);padding:8px 12px;
+    border-radius:7px;cursor:pointer;font-size:12px;font-weight:500}
+  button.danger-link{background:none;border:0;color:var(--red);cursor:pointer;font-size:18px;padding:4px 8px}
+  input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:7px;
+    background:#fff;width:100%;-webkit-appearance:none;appearance:none}
+  input[type=date]{min-height:36px}
+  select{background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231F3A5F'><path d='M7 10l5 5 5-5z'/></svg>") no-repeat right 8px center;
+    padding-right:28px}
+  label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px;font-weight:500}
+  .row{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-bottom:10px}
+  .row.cols-1{grid-template-columns:1fr}
+  .row.cols-3{grid-template-columns:repeat(3,1fr)}
+  .alerts-list > div{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .alerts-list > div:last-child{border-bottom:0}
+  .alerts-list .pill{margin-right:6px}
+  .empty{padding:20px;text-align:center;color:var(--muted);font-style:italic;font-size:13px}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+  .small{font-size:11px;color:var(--muted)}
+  .property-row{padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;
+    align-items:center;gap:10px}
+  .property-row:last-child{border-bottom:0}
+  .property-row .info{flex:1;min-width:0}
+  .property-row .info .name{font-weight:600;color:var(--navy);font-size:14px}
+  .property-row .info .meta{font-size:11px;color:var(--muted);margin-top:2px}
+  .property-row .stat{text-align:right;font-size:12px}
+  .property-row .stat .v{font-weight:600;font-size:13px}
+  details{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:8px;background:#fff}
+  summary{cursor:pointer;color:var(--navy);font-weight:600;font-size:13px;list-style:none;
+    display:flex;justify-content:space-between;align-items:center;gap:8px}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"▾";color:var(--muted);transition:transform .2s}
+  details[open] summary::after{transform:rotate(180deg)}
+  details > div{margin-top:10px}
+
+  .city-card{padding:12px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:8px}
+  .city-card .name{font-weight:600;color:var(--navy);font-size:14px;margin-bottom:4px}
+  .city-card .stats{display:flex;flex-wrap:wrap;gap:10px 14px;font-size:11px;color:var(--muted);margin:6px 0}
+  .city-card .stats b{color:var(--ink);font-weight:600}
+  .checklist{margin:0;padding-left:20px}
+  .checklist li{margin:4px 0;font-size:13px}
+
+  .net-bar{display:flex;height:36px;border-radius:8px;overflow:hidden;margin:10px 0}
+  .net-bar > div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;
+    font-weight:600;padding:0 4px;overflow:hidden;white-space:nowrap}
+  .alloc-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);
+    font-size:13px}
+  .alloc-row:last-child{border-bottom:0}
+  .alloc-row .swatch{width:14px;height:14px;border-radius:3px;flex:0 0 auto}
+  .alloc-row .name{flex:1}
+  .alloc-row .val{font-weight:600;font-variant-numeric:tabular-nums}
+  .alloc-row .pct{font-size:11px;color:var(--muted);width:48px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* Sortable list / mobile-friendly tables */
+  .stack-table{display:none}
+  table.responsive .row-card{display:none}
+
+  @media (max-width: 700px) {
+    .row{grid-template-columns:1fr}
+    .row.cols-3{grid-template-columns:1fr 1fr}
+    table.responsive thead{display:none}
+    table.responsive, table.responsive tbody, table.responsive tr, table.responsive td{display:block;width:100%}
+    table.responsive tr{background:#fff !important;border:1px solid var(--line);border-radius:10px;
+      padding:10px;margin-bottom:8px}
+    table.responsive td{padding:4px 0;border:0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    table.responsive td::before{content:attr(data-l);color:var(--muted);font-size:11px;text-transform:uppercase;
+      letter-spacing:.4px;font-weight:500}
+    table.responsive .num{text-align:right}
+    table.responsive td input,table.responsive td select{width:auto;flex:1;max-width:60%}
+  }
+  @media (min-width: 900px) {
+    nav.side{display:block}
+    nav.bottom{display:none}
+    main{padding:24px 32px;padding-bottom:24px}
+    .grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+    .row{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));display:flex;flex-wrap:wrap;align-items:flex-end}
+    .row > div{flex:1 1 200px}
+    header{padding:24px 32px}
+    header h1{font-size:22px}
+    h2{font-size:20px}
+  }
+</style>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useReducer, useCallback } = React;
+
+// ---------- Storage keys / defaults ----------
+const KEYS = {
+  props:'rep_props_v1', maint:'rep_maint_v1', exp:'rep_exp_v1', ohio:'rep_ohio_v1',
+  finances:'rep_finances_v1', settings:'rep_settings_v1'
+};
+const DEFAULT_SETTINGS = {
+  marketRate30: 0.0668, marketRate15: 0.0595, refiCostPct: 0.025,
+  targetCap: 0.085, targetCoC: 0.10, minEquityPct: 0.20,
+  refiThreshold: 150, vacancyPct: 0.08, mgmtPct: 0.08,
+  netWorthTargets: { realEstate: 0.40, equities: 0.30, cash: 0.10, retirement: 0.15, metals: 0.05 }
+};
+const DEFAULT_FINANCES = { savings: [], investments: [], retirement: [], metals: [] };
+
+const load = (k,f) => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):f } catch { return f } };
+const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+// ---------- Crypto / vault layer ----------
+const VAULT_KEY = 'rep_vault_v1';
+const MODE_KEY = 'rep_lock_mode_v1';   // 'vault' | 'plain'
+const PBKDF2_ITER = 200000;
+
+const b64enc = b => btoa(String.fromCharCode(...new Uint8Array(b)));
+const b64dec = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function deriveKey(password, salt) {
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2', salt, iterations:PBKDF2_ITER, hash:'SHA-256'},
+    baseKey,
+    {name:'AES-GCM', length:256},
+    false, ['encrypt','decrypt']
+  );
+}
+async function encryptObj(key, obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, new TextEncoder().encode(JSON.stringify(obj)));
+  return {iv: b64enc(iv), ct: b64enc(ct)};
+}
+async function decryptObj(key, blob) {
+  const iv = b64dec(blob.iv);
+  const ct = b64dec(blob.ct);
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, ct);
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function saveVault(key, salt, data) {
+  const blob = await encryptObj(key, data);
+  localStorage.setItem(VAULT_KEY, JSON.stringify({salt: b64enc(salt), iv: blob.iv, ct: blob.ct, v: 1}));
+}
+async function unlockVault(password) {
+  const raw = localStorage.getItem(VAULT_KEY);
+  if(!raw) return null;
+  const j = JSON.parse(raw);
+  const salt = b64dec(j.salt);
+  const key = await deriveKey(password, salt);
+  const data = await decryptObj(key, {iv:j.iv, ct:j.ct});
+  return {data, key, salt};
+}
+async function createVault(password, data) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const key = await deriveKey(password, salt);
+  await saveVault(key, salt, data);
+  return {key, salt};
+}
+const collectExistingPlain = () => ({
+  props: load(KEYS.props,[]), maint: load(KEYS.maint,[]), exp: load(KEYS.exp,[]),
+  ohio: load(KEYS.ohio,[]), finances: load(KEYS.finances,DEFAULT_FINANCES),
+  settings: load(KEYS.settings,DEFAULT_SETTINGS)
+});
+const wipePlainKeys = () => Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+
+const fmtMoney = n => (n==null||isNaN(n)) ? '—' : (n<0?'($'+Math.abs(Math.round(n)).toLocaleString()+')':'$'+Math.round(n).toLocaleString());
+const fmtMoney2 = n => (n==null||isNaN(n)) ? '—' : (n<0?'($'+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})+')':'$'+n.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0}));
+const fmtPct = n => (n==null||isNaN(n)) ? '—' : (n*100).toFixed(2)+'%';
+const fmtPct1 = n => (n==null||isNaN(n)) ? '—' : (n*100).toFixed(1)+'%';
+const todayISO = () => new Date().toISOString().slice(0,10);
+const daysBetween = (a,b) => Math.round((new Date(a)-new Date(b))/86400000);
+const pmt = (rate, nper, pv) => rate===0 ? -pv/nper : -(pv*rate)/(1-Math.pow(1+rate,-nper));
+
+// ---------- Calculations ----------
+const calcProperty = (p, settings) => {
+  const value = +p.value || 0, mort = +p.mortgage || 0;
+  const equity = value - mort;
+  const ltv = value > 0 ? mort/value : 0;
+  const rent = +p.rent || 0;
+  const eff = rent * (1 - settings.vacancyPct);
+  const mgmt = rent * settings.mgmtPct;
+  const pi = +p.pi || 0, taxIns = +p.taxIns || 0, hoa = +p.hoa || 0, opex = +p.opex || 0;
+  const netCF = eff - pi - taxIns - hoa - opex - mgmt;
+  const annualNOI = (eff - taxIns - hoa - opex - mgmt) * 12;
+  const capRate = value > 0 ? annualNOI/value : 0;
+  const currRate = +p.rate || 0;
+  const newTerm = +p.newTerm || 30;
+  const newPI = mort > 0 ? -pmt(settings.marketRate30/12, newTerm*12, mort) : 0;
+  const moSavings = pi - newPI;
+  const closingCost = mort * settings.refiCostPct;
+  const breakEven = moSavings > 0 ? closingCost/moSavings : null;
+  let refiDecision;
+  if(currRate - settings.marketRate30 < 0.005) refiDecision = 'Skip - rate already low';
+  else if(moSavings <= 0) refiDecision = 'Skip - no savings';
+  else if(moSavings >= settings.refiThreshold && breakEven <= 24) refiDecision = 'REFI NOW';
+  else if(moSavings >= settings.refiThreshold) refiDecision = 'Refi if staying long';
+  else refiDecision = 'Below threshold';
+  return { value, mort, equity, ltv, eff, mgmt, netCF, annualNOI, capRate,
+    newPI, moSavings, closingCost, breakEven, refiDecision };
+};
+
+const calcOhio = (o, settings) => {
+  const price = +o.price || 0, rent = +o.rent || 0;
+  const tax = +o.tax || 0, ins = +o.ins || 0, opex = +o.opex || 0;
+  const dpct = +o.dpct || 0.25;
+  const rate = +o.rate || settings.marketRate30;
+  const term = +o.term || 30;
+  const grm = rent > 0 ? price/(rent*12) : null;
+  const onePct = price > 0 ? rent/price : 0;
+  const noi = rent*12*(1 - settings.vacancyPct) - tax - ins - opex;
+  const capRate = price > 0 ? noi/price : 0;
+  const downCash = price * dpct;
+  const loan = price - downCash;
+  const monthlyPI = loan > 0 ? -pmt(rate/12, term*12, loan) : 0;
+  const annualCF = noi - monthlyPI*12;
+  const coc = downCash > 0 ? annualCF/downCash : 0;
+  const score = Math.round(
+    Math.min(40, Math.max(0, capRate/settings.targetCap*40)) +
+    Math.min(40, Math.max(0, coc/settings.targetCoC*40)) +
+    Math.min(20, Math.max(0, onePct/0.01*20))
+  );
+  return { grm, onePct, noi, capRate, downCash, loan, monthlyPI, annualCF, coc, score };
+};
+
+const maintStatus = item => {
+  if(!item.lastDate || !item.lifespan) return {label:'—', cls:'pill-gray', nextDue:null};
+  const next = new Date(item.lastDate);
+  next.setFullYear(next.getFullYear() + (+item.lifespan));
+  const days = daysBetween(next, new Date());
+  const nextDue = next.toISOString().slice(0,10);
+  if(days < 0) return {label:'Overdue', cls:'pill-red', nextDue};
+  if(days <= 60) return {label:'Due 60d', cls:'pill-amber', nextDue};
+  return {label:'OK', cls:'pill-green', nextDue};
+};
+
+const refiPill = d => d==='REFI NOW'?'pill-green' : d==='Refi if staying long'?'pill-amber' :
+  d==='Skip - rate already low'?'pill-gray' : 'pill-red';
+
+// ---------- Tab definitions ----------
+const TABS = [
+  {id:'overview',  label:'Overview',  icon:'⌂'},
+  {id:'properties',label:'Real Estate',icon:'🏠'},
+  {id:'maint',     label:'Maint',     icon:'🔧'},
+  {id:'expenses',  label:'Expenses',  icon:'💳'},
+  {id:'refi',      label:'Refi',      icon:'📉'},
+  {id:'ohio',      label:'Ohio',      icon:'🌎'},
+  {id:'finances',  label:'Finances',  icon:'💼'},
+  {id:'networth',  label:'Net Worth', icon:'📊'},
+  {id:'settings',  label:'Settings',  icon:'⚙'}
+];
+
+// ---------- Header & Nav ----------
+const Header = () => (
+  <header>
+    <h1>Portfolio Hub</h1>
+    <p>Real estate · personal finances · net worth</p>
+  </header>
+);
+
+const SideNav = ({tab, setTab}) => (
+  <nav className="side">
+    {TABS.map(t => (
+      <button key={t.id} className={tab===t.id?'active':''} onClick={()=>setTab(t.id)}>{t.label}</button>
+    ))}
+  </nav>
+);
+const BottomNav = ({tab, setTab}) => (
+  <nav className="bottom">
+    {TABS.map(t => (
+      <button key={t.id} className={tab===t.id?'active':''} onClick={()=>setTab(t.id)}>
+        <span className="icon">{t.icon}</span>{t.label}
+      </button>
+    ))}
+  </nav>
+);
+
+// ---------- Reusable bits ----------
+const KPI = ({label, value, sub, valueColor}) => (
+  <div className="kpi">
+    <div className="label">{label}</div>
+    <div className="value" style={valueColor?{color:valueColor}:null}>{value}</div>
+    {sub && <div className="sub">{sub}</div>}
+  </div>
+);
+
+const Field = ({label, value, onChange, type='text', step, options, style}) => (
+  <div style={style}>
+    <label>{label}</label>
+    {options
+      ? <select value={value||''} onChange={e=>onChange(e.target.value)}>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      : <input type={type} step={step} value={value??''} onChange={e=>onChange(e.target.value)} />}
+  </div>
+);
+
+// ---------- Overview Tab ----------
+const Overview = ({props, maint, finances, settings, setTab}) => {
+  const computed = useMemo(()=>props.map(p=>({...p, calc:calcProperty(p,settings)})),[props,settings]);
+  const totalValue = computed.reduce((s,p)=>s+p.calc.value,0);
+  const totalMort = computed.reduce((s,p)=>s+p.calc.mort,0);
+  const totalEquity = totalValue - totalMort;
+  const monthlyCF = computed.reduce((s,p)=>s+p.calc.netCF,0);
+  const annualNOI = computed.reduce((s,p)=>s+p.calc.annualNOI,0);
+  const portCap = totalValue > 0 ? annualNOI/totalValue : 0;
+  const overdueMaint = maint.filter(m => maintStatus(m).label === 'Overdue').length;
+  const refiCount = computed.filter(p => p.calc.refiDecision === 'REFI NOW').length;
+
+  const finTotal = (finances.savings||[]).reduce((s,x)=>s+(+x.balance||0),0)
+    + (finances.investments||[]).reduce((s,x)=>s+(+x.value||0),0)
+    + (finances.retirement||[]).reduce((s,x)=>s+(+x.balance||0),0)
+    + (finances.metals||[]).reduce((s,x)=>s+(+x.value||0),0);
+  const netWorth = totalEquity + finTotal;
+
+  const alerts = [];
+  maint.forEach(m => {
+    const st = maintStatus(m);
+    if(st.label === 'Overdue') alerts.push({pill:'pill-red',label:'Overdue',text:`${m.property||'—'} · ${m.item} (was due ${st.nextDue})`});
+    else if(st.label === 'Due 60d') alerts.push({pill:'pill-amber',label:'Due soon',text:`${m.property||'—'} · ${m.item} (${st.nextDue})`});
+  });
+  computed.forEach(p => {
+    if(p.calc.refiDecision === 'REFI NOW')
+      alerts.push({pill:'pill-green',label:'Refi Now',text:`${p.nickname||p.address} · save ${fmtMoney(p.calc.moSavings)}/mo, break-even ${p.calc.breakEven.toFixed(0)} mo`});
+    if(p.calc.netCF < 0)
+      alerts.push({pill:'pill-red',label:'Neg cash flow',text:`${p.nickname||p.address} · ${fmtMoney(p.calc.netCF)}/mo`});
+  });
+
+  return (
+    <div>
+      <h2>Overview</h2>
+      <div className="grid">
+        <KPI label="Net Worth" value={fmtMoney(netWorth)} sub="Real estate equity + liquid" />
+        <KPI label="Real Estate" value={fmtMoney(totalEquity)} sub={`${props.length} props · ${fmtPct1(totalValue?1-totalMort/totalValue:0)} equity`} />
+        <KPI label="Liquid + Retire" value={fmtMoney(finTotal)} sub="See Finances tab" />
+        <KPI label="Mo Cash Flow" value={fmtMoney(monthlyCF)} sub={`Annual NOI ${fmtMoney(annualNOI)}`} valueColor={monthlyCF<0?'var(--red)':null} />
+        <KPI label="Portfolio Cap" value={fmtPct(portCap)} />
+        <KPI label="Refi Opps" value={refiCount} sub={refiCount?'See Refi tab':'No action'} />
+        <KPI label="Maint Overdue" value={overdueMaint} sub={overdueMaint?'Address ASAP':'All clear'} />
+      </div>
+
+      <div className="card">
+        <h3>What needs your attention</h3>
+        {alerts.length === 0
+          ? <div className="empty">All clear — nothing demands attention right now.</div>
+          : <div className="alerts-list">{alerts.map((a,i)=>(
+              <div key={i}><span className={`pill ${a.pill}`}>{a.label}</span>{a.text}</div>
+            ))}</div>}
+      </div>
+
+      <div className="card">
+        <h3>Properties at a glance</h3>
+        {props.length === 0
+          ? <div className="empty">Add a property to see your portfolio here.</div>
+          : computed.map((p,i)=>(
+              <div className="property-row" key={i} onClick={()=>setTab('properties')}>
+                <div className="info">
+                  <div className="name">{p.nickname||p.address||'—'}</div>
+                  <div className="meta">{[p.city,p.state].filter(Boolean).join(', ')} · LTV {fmtPct1(p.calc.ltv)}</div>
+                </div>
+                <div className="stat">
+                  <div className="v" style={{color:p.calc.netCF<0?'var(--red)':'var(--green)'}}>{fmtMoney(p.calc.netCF)}/mo</div>
+                  <div className="small">{fmtMoney(p.calc.equity)} equity</div>
+                </div>
+              </div>
+            ))}
+      </div>
+    </div>
+  );
+};
+
+// ---------- Properties Tab ----------
+const Properties = ({props, setProps, settings}) => {
+  const update = (i,k,v) => { const n=[...props]; n[i]={...n[i],[k]:v}; setProps(n); };
+  const add = () => setProps([...props, {nickname:'New Property', state:'OH', value:0, mortgage:0, rate:0.06, yrsLeft:30}]);
+  const del = i => { if(confirm('Delete this property?')){ const n=[...props]; n.splice(i,1); setProps(n); }};
+
+  return (
+    <div>
+      <h2>My Properties</h2>
+      <div className="toolbar">
+        <button className="primary" onClick={add}>+ Add property</button>
+      </div>
+      {props.length === 0
+        ? <div className="card empty">No properties yet. Tap + Add property.</div>
+        : props.map((p,i) => {
+            const c = calcProperty(p,settings);
+            return (
+              <div className="card" key={i}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+                  <h3 style={{margin:0}}>{p.nickname||p.address||'New property'}</h3>
+                  <button className="ghost" onClick={()=>del(i)} style={{color:'var(--red)',borderColor:'var(--red)'}}>Delete</button>
+                </div>
+                <div className="row">
+                  <Field label="Nickname" value={p.nickname} onChange={v=>update(i,'nickname',v)} />
+                  <Field label="Address" value={p.address} onChange={v=>update(i,'address',v)} />
+                  <Field label="City" value={p.city} onChange={v=>update(i,'city',v)} />
+                  <Field label="State" value={p.state} onChange={v=>update(i,'state',v)} />
+                  <Field label="Type" value={p.type} onChange={v=>update(i,'type',v)} />
+                </div>
+                <div className="row">
+                  <Field label="Current value ($)" type="number" value={p.value} onChange={v=>update(i,'value',v)} />
+                  <Field label="Mortgage balance ($)" type="number" value={p.mortgage} onChange={v=>update(i,'mortgage',v)} />
+                  <Field label="Loan rate (e.g. 0.0625)" type="number" step="0.0001" value={p.rate} onChange={v=>update(i,'rate',v)} />
+                  <Field label="Yrs remaining" type="number" value={p.yrsLeft} onChange={v=>update(i,'yrsLeft',v)} />
+                </div>
+                <div className="row">
+                  <Field label="Monthly P&I" type="number" value={p.pi} onChange={v=>update(i,'pi',v)} />
+                  <Field label="Tax + Ins (mo)" type="number" value={p.taxIns} onChange={v=>update(i,'taxIns',v)} />
+                  <Field label="HOA (mo)" type="number" value={p.hoa} onChange={v=>update(i,'hoa',v)} />
+                  <Field label="Rent (mo)" type="number" value={p.rent} onChange={v=>update(i,'rent',v)} />
+                  <Field label="Op exp avg (mo)" type="number" value={p.opex} onChange={v=>update(i,'opex',v)} />
+                </div>
+                <div className="grid" style={{marginTop:8}}>
+                  <KPI label="Equity" value={fmtMoney(c.equity)} sub={`LTV ${fmtPct1(c.ltv)}`} />
+                  <KPI label="Mo CF" value={fmtMoney(c.netCF)} valueColor={c.netCF<0?'var(--red)':'var(--green)'} />
+                  <KPI label="Annual NOI" value={fmtMoney(c.annualNOI)} />
+                  <KPI label="Cap Rate" value={fmtPct(c.capRate)} />
+                </div>
+                <div className="small" style={{marginTop:6}}>
+                  Refi: <span className={`pill ${refiPill(c.refiDecision)}`}>{c.refiDecision}</span>
+                  {c.moSavings>0 && ` · Save ${fmtMoney(c.moSavings)}/mo`}
+                </div>
+              </div>
+            );
+          })}
+    </div>
+  );
+};
+
+// ---------- Maintenance Tab ----------
+const Maint = ({maint, setMaint, props}) => {
+  const update = (i,k,v) => { const n=[...maint]; n[i]={...n[i],[k]:v}; setMaint(n); };
+  const add = () => setMaint([...maint, {property:'',item:'',lastDate:todayISO(),lifespan:10,cost:0}]);
+  const del = i => { const n=[...maint]; n.splice(i,1); setMaint(n); };
+  const propNames = props.map(p=>p.nickname||p.address).filter(Boolean);
+
+  const overdueCount = maint.filter(m=>maintStatus(m).label==='Overdue').length;
+  const dueSoonCount = maint.filter(m=>maintStatus(m).label==='Due 60d').length;
+  const totalCost = maint.filter(m=>maintStatus(m).label!=='OK' && maintStatus(m).label!=='—').reduce((s,m)=>s+(+m.cost||0),0);
+
+  return (
+    <div>
+      <h2>Maintenance Tracker</h2>
+      <div className="grid">
+        <KPI label="Overdue" value={overdueCount} valueColor={overdueCount?'var(--red)':null} />
+        <KPI label="Due 60 days" value={dueSoonCount} valueColor={dueSoonCount?'var(--amber)':null} />
+        <KPI label="Upcoming cost" value={fmtMoney(totalCost)} />
+      </div>
+      <div className="toolbar"><button className="primary" onClick={add}>+ Add item</button></div>
+      {maint.length === 0
+        ? <div className="card empty">No maintenance items yet.</div>
+        : <div className="card" style={{padding:8}}>
+            <table className="responsive">
+              <thead><tr>
+                <th>Property</th><th>Item</th><th>Last</th><th>Life</th>
+                <th>Next</th><th>Status</th><th>Cost</th><th></th>
+              </tr></thead>
+              <tbody>{maint.map((m,i)=>{
+                const st = maintStatus(m);
+                return (
+                  <tr key={i}>
+                    <td data-l="Property"><input list="prop-opts" value={m.property||''} onChange={e=>update(i,'property',e.target.value)} /></td>
+                    <td data-l="Item"><input value={m.item||''} onChange={e=>update(i,'item',e.target.value)} /></td>
+                    <td data-l="Last"><input type="date" value={m.lastDate||''} onChange={e=>update(i,'lastDate',e.target.value)} /></td>
+                    <td data-l="Life (yr)"><input type="number" value={m.lifespan||''} onChange={e=>update(i,'lifespan',e.target.value)} /></td>
+                    <td data-l="Next due">{st.nextDue||'—'}</td>
+                    <td data-l="Status"><span className={`pill ${st.cls}`}>{st.label}</span></td>
+                    <td data-l="Cost" className="num"><input type="number" value={m.cost||''} onChange={e=>update(i,'cost',e.target.value)} /></td>
+                    <td><button className="danger-link" onClick={()=>del(i)}>×</button></td>
+                  </tr>
+                );
+              })}</tbody>
+            </table>
+            <datalist id="prop-opts">{propNames.map(p=>(<option key={p} value={p}/>))}</datalist>
+          </div>}
+    </div>
+  );
+};
+
+// ---------- Expenses Tab ----------
+const CATS = ['Mortgage','Property Tax','Insurance','Utilities','Repairs','Capital Improvement','Mgmt Fee','HOA','Travel','Legal/Accounting','Other'];
+
+const Expenses = ({exp, setExp, props}) => {
+  const [filterProp, setFP] = useState('');
+  const [filterCat, setFC] = useState('');
+  const update = (i,k,v) => { const n=[...exp]; n[i]={...n[i],[k]:v}; setExp(n); };
+  const add = () => setExp([...exp, {date:todayISO(),property:'',category:'Mortgage',amount:0}]);
+  const del = i => { const n=[...exp]; n.splice(i,1); setExp(n); };
+  const propNames = [...new Set(props.map(p=>p.nickname||p.address).filter(Boolean))];
+
+  const filtered = exp.filter(e =>
+    (!filterProp || e.property===filterProp) && (!filterCat || e.category===filterCat));
+  const today = new Date();
+  const sumYTD = filtered.filter(e=>e.date && new Date(e.date).getFullYear()===today.getFullYear()).reduce((s,e)=>s+(+e.amount||0),0);
+  const sumMTD = filtered.filter(e=>{const d=new Date(e.date); return d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth();}).reduce((s,e)=>s+(+e.amount||0),0);
+  const sum12 = filtered.filter(e=>{const d=new Date(e.date); return (today-d)/86400000 <= 365;}).reduce((s,e)=>s+(+e.amount||0),0);
+
+  const catTotals = {};
+  filtered.filter(e=>e.date && new Date(e.date).getFullYear()===today.getFullYear()).forEach(e=>{
+    const c = e.category||'Other'; catTotals[c] = (catTotals[c]||0)+(+e.amount||0);
+  });
+  const total = Object.values(catTotals).reduce((s,v)=>s+v,0);
+
+  const sorted = [...filtered].map((e,i)=>({...e,_orig:exp.indexOf(e)})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+
+  return (
+    <div>
+      <h2>Expense Tracker</h2>
+      <div className="row cols-3">
+        <select value={filterProp} onChange={e=>setFP(e.target.value)}>
+          <option value="">All properties</option>{propNames.map(p=><option key={p}>{p}</option>)}
+        </select>
+        <select value={filterCat} onChange={e=>setFC(e.target.value)}>
+          <option value="">All categories</option>{CATS.map(c=><option key={c}>{c}</option>)}
+        </select>
+        <button className="primary" onClick={add}>+ Add expense</button>
+      </div>
+      <div className="grid">
+        <KPI label="MTD" value={fmtMoney(sumMTD)} />
+        <KPI label="YTD" value={fmtMoney(sumYTD)} />
+        <KPI label="Last 12 mo" value={fmtMoney(sum12)} />
+        <KPI label="Entries" value={filtered.length} />
+      </div>
+      {filtered.length === 0
+        ? <div className="card empty">No expenses match. Add an entry to start tracking.</div>
+        : <div className="card" style={{padding:8}}>
+            <table className="responsive">
+              <thead><tr>
+                <th>Date</th><th>Property</th><th>Category</th><th>Vendor</th><th>Description</th><th>Amount</th><th></th>
+              </tr></thead>
+              <tbody>{sorted.map(e=>(
+                <tr key={e._orig}>
+                  <td data-l="Date"><input type="date" value={e.date||''} onChange={ev=>update(e._orig,'date',ev.target.value)} /></td>
+                  <td data-l="Property"><input list="exp-prop-opts" value={e.property||''} onChange={ev=>update(e._orig,'property',ev.target.value)} /></td>
+                  <td data-l="Category">
+                    <select value={e.category||'Other'} onChange={ev=>update(e._orig,'category',ev.target.value)}>
+                      {CATS.map(c=><option key={c}>{c}</option>)}
+                    </select>
+                  </td>
+                  <td data-l="Vendor"><input value={e.vendor||''} onChange={ev=>update(e._orig,'vendor',ev.target.value)} /></td>
+                  <td data-l="Description"><input value={e.description||''} onChange={ev=>update(e._orig,'description',ev.target.value)} /></td>
+                  <td data-l="Amount" className="num"><input type="number" value={e.amount||''} onChange={ev=>update(e._orig,'amount',ev.target.value)} /></td>
+                  <td><button className="danger-link" onClick={()=>del(e._orig)}>×</button></td>
+                </tr>
+              ))}</tbody>
+            </table>
+            <datalist id="exp-prop-opts">{propNames.map(p=>(<option key={p} value={p}/>))}</datalist>
+          </div>}
+
+      {total > 0 && (
+        <div className="card">
+          <h3>YTD by category</h3>
+          {Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,v])=>(
+            <div className="alloc-row" key={c}>
+              <div className="name">{c}</div>
+              <div className="val">{fmtMoney(v)}</div>
+              <div className="pct">{(v/total*100).toFixed(1)}%</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ---------- Refi Tab ----------
+const Refi = ({props, settings}) => (
+  <div>
+    <h2>Refinance Analyzer</h2>
+    <div className="card small">
+      Uses Settings (current 30-yr rate <b>{fmtPct(settings.marketRate30)}</b>, closing cost <b>{fmtPct(settings.refiCostPct)}</b>, threshold <b>{fmtMoney(settings.refiThreshold)}/mo</b>).{' '}
+      <span className="pill pill-green">REFI NOW</span> meaningful drop + break-even ≤24 mo ·{' '}
+      <span className="pill pill-amber">Refi if staying long</span> savings exist but slow ·{' '}
+      <span className="pill pill-red">Skip</span> no benefit.
+    </div>
+    {props.length === 0
+      ? <div className="card empty">Add properties to analyze refi options.</div>
+      : <div className="card" style={{padding:8}}>
+          <table className="responsive">
+            <thead><tr>
+              <th>Property</th><th>Balance</th><th>Curr</th><th>Curr P&I</th>
+              <th>Mkt</th><th>New P&I</th><th>Save/mo</th><th>Closing</th><th>BE (mo)</th><th>Decision</th>
+            </tr></thead>
+            <tbody>{props.map((p,i)=>{
+              const c = calcProperty(p,settings);
+              return (
+                <tr key={i}>
+                  <td data-l="Property">{p.nickname||p.address||'—'}</td>
+                  <td data-l="Balance" className="num">{fmtMoney(c.mort)}</td>
+                  <td data-l="Curr rate" className="num">{fmtPct(+p.rate||0)}</td>
+                  <td data-l="Curr P&I" className="num">{fmtMoney(+p.pi||0)}</td>
+                  <td data-l="Mkt rate" className="num">{fmtPct(settings.marketRate30)}</td>
+                  <td data-l="New P&I" className="num">{fmtMoney(c.newPI)}</td>
+                  <td data-l="Save/mo" className="num" style={{color:c.moSavings>0?'var(--green)':'var(--red)'}}>{fmtMoney(c.moSavings)}</td>
+                  <td data-l="Closing" className="num">{fmtMoney(c.closingCost)}</td>
+                  <td data-l="Break-even" className="num">{c.breakEven?c.breakEven.toFixed(1):'—'}</td>
+                  <td data-l="Decision"><span className={`pill ${refiPill(c.refiDecision)}`}>{c.refiDecision}</span></td>
+                </tr>
+              );
+            })}</tbody>
+          </table>
+        </div>}
+  </div>
+);
+
+// ---------- Ohio Tab ----------
+const OHIO_MARKETS = [
+  {city:'Cincinnati', median:279000, yieldPct:'8.5%', trend:'Strong demand', cap:'7-9%',
+    thesis:'RentCafe #1 hottest rental market into 2026; 81% YoY apartment demand jump. Multifamily play.'},
+  {city:'Columbus', median:285000, yieldPct:'9.0%', trend:'+5-7%', cap:'8-10%',
+    thesis:'$20B Intel semiconductor project drives jobs, talent, housing demand. Balanced yield + low vacancy.'},
+  {city:'Cleveland', median:150000, yieldPct:'11.3%', trend:'Stable', cap:'10-13%',
+    thesis:'Highest rent-to-yield ratio in the state. Best cash flow city. Watch neighborhood-level risk.'},
+  {city:'Toledo', median:150000, yieldPct:'9.5%', trend:'+13.1% forecast', cap:'9-12%',
+    thesis:'Projected to lead Ohio in price growth. Affordability + demand. Underpriced market.'},
+  {city:'Dayton', median:133000, yieldPct:'10.5%', trend:'Stable', cap:'9-12%',
+    thesis:'"Cash Flow Capital" — most affordable Ohio entry. Strong 1% rule territory.'}
+];
+const STATUSES = ['Watching','Touring','Offer','Won','Lost'];
+
+const Ohio = ({ohio, setOhio, settings}) => {
+  const update = (i,k,v) => { const n=[...ohio]; n[i]={...n[i],[k]:v}; setOhio(n); };
+  const add = () => setOhio([...ohio, {status:'Watching',address:'',city:'Cleveland',price:0,rent:0,dpct:0.25,term:30,rate:settings.marketRate30}]);
+  const del = i => { const n=[...ohio]; n.splice(i,1); setOhio(n); };
+
+  return (
+    <div>
+      <h2>Ohio Pipeline</h2>
+      <div className="card">
+        <h3>Top Ohio markets · May 2026</h3>
+        {OHIO_MARKETS.map(m=>(
+          <div className="city-card" key={m.city}>
+            <div className="name">{m.city}</div>
+            <div className="stats">
+              <span>Median <b>{fmtMoney(m.median)}</b></span>
+              <span>Yield <b>{m.yieldPct}</b></span>
+              <span>Cap <b>{m.cap}</b></span>
+              <span>Trend <b>{m.trend}</b></span>
+            </div>
+            <div className="small">{m.thesis}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <h3>Deal evaluation framework</h3>
+        <ul className="checklist">
+          <li><b>1% rule:</b> Monthly rent ≥ 1% of purchase price.</li>
+          <li><b>Cap rate:</b> NOI ÷ price. Target 8%+ in Ohio.</li>
+          <li><b>Cash-on-cash:</b> Annual CF ÷ cash invested. Target 10%+.</li>
+          <li><b>GRM:</b> Price ÷ annual rent. 6-9 is solid.</li>
+          <li><b>Reserves:</b> 3-6 mo mortgage + 1% of value/yr for capex.</li>
+        </ul>
+      </div>
+
+      <div className="toolbar">
+        <button className="primary" onClick={add}>+ Add prospect</button>
+        <span className="small">Score = 40·(cap÷target) + 40·(CoC÷target) + 20·(rent÷price÷1%).</span>
+      </div>
+
+      {ohio.length === 0
+        ? <div className="card empty">No prospects yet.</div>
+        : ohio.map((o,i)=>{
+            const c = calcOhio(o, settings);
+            const scoreColor = c.score>=85?'var(--green)':c.score>=70?'var(--amber)':'var(--red)';
+            const scoreBg = c.score>=85?'var(--green-bg)':c.score>=70?'var(--amber-bg)':'var(--red-bg)';
+            return (
+              <details key={i}>
+                <summary>
+                  <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                    <span className={`pill ${o.status==='Won'?'pill-green':o.status==='Offer'?'pill-amber':o.status==='Lost'?'pill-red':'pill-gray'}`}>{o.status}</span>{' '}
+                    {o.address||'(unnamed)'} · {o.city}
+                  </span>
+                  <span className="badge-score" style={{background:scoreBg,color:scoreColor}}>{c.score}</span>
+                </summary>
+                <div>
+                  <div className="row cols-3">
+                    <Field label="Status" value={o.status} onChange={v=>update(i,'status',v)} options={STATUSES} />
+                    <Field label="Address" value={o.address} onChange={v=>update(i,'address',v)} />
+                    <Field label="City" value={o.city} onChange={v=>update(i,'city',v)} />
+                  </div>
+                  <div className="row cols-3">
+                    <Field label="Price ($)" type="number" value={o.price} onChange={v=>update(i,'price',v)} />
+                    <Field label="Rent (mo)" type="number" value={o.rent} onChange={v=>update(i,'rent',v)} />
+                    <Field label="Annual tax" type="number" value={o.tax} onChange={v=>update(i,'tax',v)} />
+                  </div>
+                  <div className="row cols-3">
+                    <Field label="Annual ins" type="number" value={o.ins} onChange={v=>update(i,'ins',v)} />
+                    <Field label="Mgmt+repairs/yr" type="number" value={o.opex} onChange={v=>update(i,'opex',v)} />
+                    <Field label="Down %" type="number" step="0.01" value={o.dpct} onChange={v=>update(i,'dpct',v)} />
+                  </div>
+                  <div className="row cols-3">
+                    <Field label="Loan rate" type="number" step="0.0001" value={o.rate} onChange={v=>update(i,'rate',v)} />
+                    <Field label="Term (yr)" type="number" value={o.term} onChange={v=>update(i,'term',v)} />
+                    <Field label="Notes" value={o.notes} onChange={v=>update(i,'notes',v)} />
+                  </div>
+                  <div className="grid">
+                    <KPI label="1% Rule" value={(c.onePct*100).toFixed(2)+'%'} />
+                    <KPI label="Cap Rate" value={fmtPct(c.capRate)} />
+                    <KPI label="Cash-on-Cash" value={fmtPct(c.coc)} />
+                    <KPI label="Annual CF" value={fmtMoney(c.annualCF)} valueColor={c.annualCF<0?'var(--red)':null} />
+                    <KPI label="Down cash" value={fmtMoney(c.downCash)} />
+                    <KPI label="Mo P&I" value={fmtMoney(c.monthlyPI)} />
+                  </div>
+                  <div style={{textAlign:'right',marginTop:8}}>
+                    <button className="ghost" onClick={()=>del(i)} style={{color:'var(--red)',borderColor:'var(--red)'}}>Delete</button>
+                  </div>
+                </div>
+              </details>
+            );
+          })}
+    </div>
+  );
+};
+
+// ---------- Personal Finances Tab ----------
+const SAVINGS_TYPES = ['Checking','Savings','High-Yield Savings','CD','Money Market'];
+const INVEST_TYPES = ['Stock','ETF','Mutual Fund','Bond','Crypto','Other'];
+const RETIRE_TYPES = ['401(k)','Traditional IRA','Roth IRA','Roth 401(k)','SEP IRA','HSA','Pension','Other'];
+const METAL_TYPES = ['Gold','Silver','Platinum','Palladium','Other'];
+const METAL_FORMS = ['Coin','Bar','Round','ETF','Other'];
+
+const Section = ({title, items, columns, addItem, updateItem, deleteItem, totalLabel='Total', totalKey='value'}) => {
+  const total = items.reduce((s,x)=>s+(+x[totalKey]||0),0);
+  return (
+    <div className="card">
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+        <h3 style={{margin:0}}>{title}</h3>
+        <div style={{textAlign:'right'}}>
+          <div className="small">{totalLabel}</div>
+          <div style={{fontWeight:600,color:'var(--navy)',fontSize:16}}>{fmtMoney(total)}</div>
+        </div>
+      </div>
+      <div className="toolbar"><button className="primary" onClick={addItem}>+ Add</button></div>
+      {items.length === 0
+        ? <div className="empty">None added yet.</div>
+        : <table className="responsive">
+            <thead><tr>{columns.map(c=>(<th key={c.key}>{c.label}</th>))}<th></th></tr></thead>
+            <tbody>{items.map((x,i)=>(
+              <tr key={i}>
+                {columns.map(c=>(
+                  <td key={c.key} data-l={c.label} className={c.num?'num':''}>
+                    {c.options
+                      ? <select value={x[c.key]||''} onChange={e=>updateItem(i,c.key,e.target.value)}>
+                          {c.options.map(o=><option key={o}>{o}</option>)}
+                        </select>
+                      : <input type={c.type||'text'} step={c.step} value={x[c.key]??''} onChange={e=>updateItem(i,c.key,e.target.value)} />}
+                  </td>
+                ))}
+                <td><button className="danger-link" onClick={()=>deleteItem(i)}>×</button></td>
+              </tr>
+            ))}</tbody>
+          </table>}
+    </div>
+  );
+};
+
+const Finances = ({finances, setFinances}) => {
+  const upd = (cat) => ({
+    add: () => {
+      const blanks = {
+        savings: {institution:'',type:'Savings',balance:0,apy:0},
+        investments: {holding:'',type:'Stock',account:'',shares:0,value:0,costBasis:0},
+        retirement: {account:'',type:'401(k)',provider:'',balance:0,ytdContrib:0},
+        metals: {type:'Gold',form:'Coin',quantity:0,value:0}
+      };
+      setFinances({...finances, [cat]:[...(finances[cat]||[]), blanks[cat]]});
+    },
+    update: (i,k,v) => {
+      const arr = [...(finances[cat]||[])]; arr[i] = {...arr[i], [k]:v};
+      setFinances({...finances, [cat]:arr});
+    },
+    del: i => {
+      const arr = [...(finances[cat]||[])]; arr.splice(i,1);
+      setFinances({...finances, [cat]:arr});
+    }
+  });
+
+  const sav = upd('savings'), inv = upd('investments'), ret = upd('retirement'), met = upd('metals');
+  const sumS = (finances.savings||[]).reduce((s,x)=>s+(+x.balance||0),0);
+  const sumI = (finances.investments||[]).reduce((s,x)=>s+(+x.value||0),0);
+  const sumR = (finances.retirement||[]).reduce((s,x)=>s+(+x.balance||0),0);
+  const sumM = (finances.metals||[]).reduce((s,x)=>s+(+x.value||0),0);
+  const total = sumS + sumI + sumR + sumM;
+
+  return (
+    <div>
+      <h2>Personal Finances</h2>
+      <div className="grid">
+        <KPI label="Cash & Savings" value={fmtMoney(sumS)} />
+        <KPI label="Investments" value={fmtMoney(sumI)} />
+        <KPI label="Retirement" value={fmtMoney(sumR)} />
+        <KPI label="Precious Metals" value={fmtMoney(sumM)} />
+        <KPI label="Total liquid + retire" value={fmtMoney(total)} sub="Excludes real estate" />
+      </div>
+
+      <Section
+        title="Cash & Savings"
+        items={finances.savings||[]}
+        addItem={sav.add} updateItem={sav.update} deleteItem={sav.del}
+        totalLabel="Total balance" totalKey="balance"
+        columns={[
+          {key:'institution',label:'Institution'},
+          {key:'type',label:'Type',options:SAVINGS_TYPES},
+          {key:'balance',label:'Balance',type:'number',num:true},
+          {key:'apy',label:'APY',type:'number',step:'0.0001',num:true},
+          {key:'notes',label:'Notes'}
+        ]} />
+
+      <Section
+        title="Investments (Stocks / ETFs / Bonds)"
+        items={finances.investments||[]}
+        addItem={inv.add} updateItem={inv.update} deleteItem={inv.del}
+        totalLabel="Market value"
+        columns={[
+          {key:'holding',label:'Holding / Ticker'},
+          {key:'type',label:'Type',options:INVEST_TYPES},
+          {key:'account',label:'Account'},
+          {key:'shares',label:'Shares',type:'number',step:'0.001',num:true},
+          {key:'value',label:'Mkt Value',type:'number',num:true},
+          {key:'costBasis',label:'Cost Basis',type:'number',num:true}
+        ]} />
+
+      <Section
+        title="Retirement Accounts"
+        items={finances.retirement||[]}
+        addItem={ret.add} updateItem={ret.update} deleteItem={ret.del}
+        totalLabel="Total balance" totalKey="balance"
+        columns={[
+          {key:'account',label:'Account'},
+          {key:'type',label:'Type',options:RETIRE_TYPES},
+          {key:'provider',label:'Provider'},
+          {key:'balance',label:'Balance',type:'number',num:true},
+          {key:'ytdContrib',label:'YTD Contrib',type:'number',num:true}
+        ]} />
+
+      <Section
+        title="Precious Metals"
+        items={finances.metals||[]}
+        addItem={met.add} updateItem={met.update} deleteItem={met.del}
+        totalLabel="Total value"
+        columns={[
+          {key:'type',label:'Metal',options:METAL_TYPES},
+          {key:'form',label:'Form',options:METAL_FORMS},
+          {key:'quantity',label:'Qty (oz)',type:'number',step:'0.001',num:true},
+          {key:'value',label:'Value',type:'number',num:true},
+          {key:'notes',label:'Notes'}
+        ]} />
+    </div>
+  );
+};
+
+// ---------- Net Worth Tab ----------
+const NetWorth = ({props, finances, settings}) => {
+  const computed = props.map(p=>({...p, calc:calcProperty(p,settings)}));
+  const reEquity = computed.reduce((s,p)=>s+p.calc.equity,0);
+  const reValue = computed.reduce((s,p)=>s+p.calc.value,0);
+  const reMort = computed.reduce((s,p)=>s+p.calc.mort,0);
+  const annualCF = computed.reduce((s,p)=>s+p.calc.netCF,0)*12;
+  const sumS = (finances.savings||[]).reduce((s,x)=>s+(+x.balance||0),0);
+  const sumI = (finances.investments||[]).reduce((s,x)=>s+(+x.value||0),0);
+  const sumR = (finances.retirement||[]).reduce((s,x)=>s+(+x.balance||0),0);
+  const sumM = (finances.metals||[]).reduce((s,x)=>s+(+x.value||0),0);
+
+  const totalAssets = reValue + sumS + sumI + sumR + sumM;
+  const totalLiabilities = reMort;
+  const netWorth = totalAssets - totalLiabilities;
+  const liquid = sumS + sumI + sumM;
+  const illiquid = reEquity + sumR;
+
+  const allocations = [
+    {name:'Real Estate equity', value:reEquity, color:'#1F3A5F', target:settings.netWorthTargets.realEstate},
+    {name:'Equities (stocks/funds)', value:sumI, color:'#2E7D8F', target:settings.netWorthTargets.equities},
+    {name:'Cash & Savings', value:sumS, color:'#5BA4B8', target:settings.netWorthTargets.cash},
+    {name:'Retirement', value:sumR, color:'#C9A227', target:settings.netWorthTargets.retirement},
+    {name:'Precious Metals', value:sumM, color:'#8B6914', target:settings.netWorthTargets.metals}
+  ];
+  const allocTotal = allocations.reduce((s,a)=>s+a.value,0);
+
+  return (
+    <div>
+      <h2>Net Worth</h2>
+      <div className="grid">
+        <KPI label="Net Worth" value={fmtMoney(netWorth)} />
+        <KPI label="Total Assets" value={fmtMoney(totalAssets)} />
+        <KPI label="Total Liabilities" value={fmtMoney(totalLiabilities)} valueColor="var(--red)" />
+        <KPI label="Liquid Assets" value={fmtMoney(liquid)} sub={`${allocTotal?(liquid/allocTotal*100).toFixed(0):0}% of allocation`} />
+        <KPI label="Real Estate Cash Flow" value={fmtMoney(annualCF)} sub="Annual, net of all expenses" />
+      </div>
+
+      <div className="card">
+        <h3>Allocation</h3>
+        {allocTotal > 0 && (
+          <div className="net-bar">
+            {allocations.filter(a=>a.value>0).map((a,i)=>(
+              <div key={i} style={{background:a.color, flex:a.value, minWidth:a.value/allocTotal>0.06?'auto':'0'}}>
+                {a.value/allocTotal>0.08 ? (a.value/allocTotal*100).toFixed(0)+'%' : ''}
+              </div>
+            ))}
+          </div>
+        )}
+        {allocations.map(a => (
+          <div className="alloc-row" key={a.name}>
+            <span className="swatch" style={{background:a.color}}></span>
+            <div className="name">{a.name}</div>
+            <div className="val">{fmtMoney(a.value)}</div>
+            <div className="pct">{allocTotal?(a.value/allocTotal*100).toFixed(1):'0.0'}%</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <h3>Allocation vs target</h3>
+        <p className="small" style={{marginTop:0}}>Targets are set on the Settings tab. Variances tell you what's over/under-weight.</p>
+        <table className="responsive">
+          <thead><tr><th>Bucket</th><th>Actual</th><th>Target</th><th>Variance</th><th>Action</th></tr></thead>
+          <tbody>{allocations.map(a => {
+            const actual = allocTotal?a.value/allocTotal:0;
+            const variance = actual - a.target;
+            const action = Math.abs(variance) < 0.02 ? 'On target' :
+              variance > 0 ? 'Overweight — trim' : 'Underweight — add';
+            const cls = Math.abs(variance) < 0.02 ? 'pill-green' :
+              variance > 0 ? 'pill-amber' : 'pill-amber';
+            return (
+              <tr key={a.name}>
+                <td data-l="Bucket">{a.name}</td>
+                <td data-l="Actual" className="num">{fmtPct1(actual)}</td>
+                <td data-l="Target" className="num">{fmtPct1(a.target)}</td>
+                <td data-l="Variance" className="num" style={{color:variance<0?'var(--red)':variance>0?'var(--amber)':'var(--green)'}}>
+                  {variance>=0?'+':''}{(variance*100).toFixed(1)}%
+                </td>
+                <td data-l="Action"><span className={`pill ${cls}`}>{action}</span></td>
+              </tr>
+            );
+          })}</tbody>
+        </table>
+      </div>
+
+      <div className="card">
+        <h3>Balance sheet</h3>
+        <table>
+          <tbody>
+            <tr><td colSpan="2" style={{background:'#FAFBFD',fontWeight:600,color:'var(--navy)'}}>ASSETS</td></tr>
+            <tr><td>Real estate (market value)</td><td className="num">{fmtMoney(reValue)}</td></tr>
+            <tr><td>Cash & savings</td><td className="num">{fmtMoney(sumS)}</td></tr>
+            <tr><td>Investments (taxable)</td><td className="num">{fmtMoney(sumI)}</td></tr>
+            <tr><td>Retirement accounts</td><td className="num">{fmtMoney(sumR)}</td></tr>
+            <tr><td>Precious metals</td><td className="num">{fmtMoney(sumM)}</td></tr>
+            <tr><td><b>Total assets</b></td><td className="num"><b>{fmtMoney(totalAssets)}</b></td></tr>
+            <tr><td colSpan="2" style={{background:'#FAFBFD',fontWeight:600,color:'var(--navy)'}}>LIABILITIES</td></tr>
+            <tr><td>Mortgage debt</td><td className="num">{fmtMoney(reMort)}</td></tr>
+            <tr><td><b>Total liabilities</b></td><td className="num"><b>{fmtMoney(totalLiabilities)}</b></td></tr>
+            <tr><td colSpan="2" style={{background:'#FAFBFD',fontWeight:600,color:'var(--navy)'}}>NET WORTH</td></tr>
+            <tr><td><b>Net worth</b></td><td className="num" style={{fontWeight:700,color:'var(--navy)',fontSize:16}}>{fmtMoney(netWorth)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ---------- Settings Tab ----------
+const SettingsTab = ({settings, setSettings, exportData, importData, exportXLSX, importXLSX, loadSamples, resetAll, mode, onLock, onEnableEncryption, onChangePassword}) => {
+  const [s, setS] = useState(settings);
+  useEffect(()=>setS(settings),[settings]);
+  const updT = (k,v) => setS({...s, netWorthTargets:{...s.netWorthTargets, [k]:+v}});
+
+  const fields = [
+    {k:'marketRate30',l:'Current 30-yr mortgage rate',pct:true},
+    {k:'marketRate15',l:'Current 15-yr mortgage rate',pct:true},
+    {k:'refiCostPct', l:'Refi closing cost (% of loan)',pct:true},
+    {k:'targetCap',   l:'Target cap rate (Ohio)',pct:true},
+    {k:'targetCoC',   l:'Target cash-on-cash',pct:true},
+    {k:'minEquityPct',l:'Min equity for refi',pct:true},
+    {k:'refiThreshold',l:'Refi savings threshold ($/mo)',pct:false},
+    {k:'vacancyPct',  l:'Vacancy assumption',pct:true},
+    {k:'mgmtPct',     l:'Property mgmt fee',pct:true}
+  ];
+
+  const targetSum = Object.values(s.netWorthTargets).reduce((a,b)=>a+b,0);
+
+  return (
+    <div>
+      <h2>Settings</h2>
+      <div className="card">
+        <h3>Core assumptions</h3>
+        {fields.map(f => (
+          <div key={f.k} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 0',borderBottom:'1px solid var(--line)',gap:10}}>
+            <div style={{flex:1}}>{f.l} {f.pct && <span className="small">({(s[f.k]*100).toFixed(2)}%)</span>}</div>
+            <input type="number" step={f.pct?'0.0001':'1'} value={s[f.k]} onChange={e=>setS({...s, [f.k]:+e.target.value})} style={{width:120,textAlign:'right'}} />
+          </div>
+        ))}
+        <div style={{marginTop:12}}><button className="primary" onClick={()=>setSettings(s)}>Save settings</button></div>
+      </div>
+
+      <div className="card">
+        <h3>Net worth allocation targets</h3>
+        <p className="small" style={{marginTop:0}}>Should sum to 100%. Currently: <b style={{color:Math.abs(targetSum-1)<0.001?'var(--green)':'var(--red)'}}>{(targetSum*100).toFixed(0)}%</b></p>
+        {Object.entries(s.netWorthTargets).map(([k,v]) => (
+          <div key={k} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'6px 0',borderBottom:'1px solid var(--line)',gap:10}}>
+            <div style={{flex:1,textTransform:'capitalize'}}>{k.replace(/([A-Z])/g,' $1').toLowerCase()} <span className="small">({(v*100).toFixed(0)}%)</span></div>
+            <input type="number" step="0.01" value={v} onChange={e=>updT(k, e.target.value)} style={{width:120,textAlign:'right'}} />
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <h3>Sync with Excel (the backend)</h3>
+        <p className="small" style={{marginTop:0}}>
+          The Excel file is your source of truth across devices. Drop it in OneDrive/iCloud, then import here on each device.
+        </p>
+        <div className="toolbar">
+          <button className="primary" onClick={exportXLSX}>Export to Excel</button>
+          <button className="ghost" onClick={()=>document.getElementById('imp-xlsx').click()}>Import from Excel</button>
+          <input id="imp-xlsx" type="file" accept=".xlsx,.xls" style={{display:'none'}} onChange={importXLSX} />
+        </div>
+        <h3>Quick JSON backup</h3>
+        <div className="toolbar">
+          <button className="ghost" onClick={exportData}>Export JSON</button>
+          <button className="ghost" onClick={()=>document.getElementById('imp-json').click()}>Import JSON</button>
+          <input id="imp-json" type="file" accept=".json" style={{display:'none'}} onChange={importData} />
+        </div>
+      </div>
+
+      <div className="card">
+        <h3>Mortgage rate context · May 3, 2026</h3>
+        <table>
+          <tbody>
+            <tr><td>30-yr fixed refi (Bankrate avg)</td><td className="num"><b>6.68%</b></td></tr>
+            <tr><td>30-yr fixed refi (Zillow)</td><td className="num">6.62%</td></tr>
+            <tr><td>April 2026 low (Apr 18)</td><td className="num">6.02%</td></tr>
+            <tr><td>Q2 2026 forecast (MBA / Fannie Mae)</td><td className="num">6.30%</td></tr>
+            <tr><td>15-yr fixed refi (approx)</td><td className="num">5.95%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="card">
+        <h3>Security</h3>
+        {mode === 'unlocked' && (
+          <div>
+            <p className="small" style={{marginTop:0}}>
+              <span className="pill pill-green">Encrypted</span> Your data is protected with AES-256.
+              You'll need your password each time you open this page on this device.
+            </p>
+            <div className="toolbar">
+              <button className="primary" onClick={onLock}>Lock now</button>
+              <button className="ghost" onClick={onChangePassword}>Change password</button>
+            </div>
+          </div>
+        )}
+        {mode === 'plain' && (
+          <div>
+            <p className="small" style={{marginTop:0}}>
+              <span className="pill pill-amber">Not protected</span> Data is stored in plain browser storage.
+              Anyone with access to this device can read it.
+            </p>
+            <div className="toolbar">
+              <button className="primary" onClick={onEnableEncryption}>Enable password protection</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h3>Utilities</h3>
+        <div className="toolbar">
+          <button className="ghost" onClick={loadSamples}>Load sample data</button>
+          <button className="ghost" onClick={resetAll} style={{color:'var(--red)',borderColor:'var(--red)'}}>Reset all data</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ---------- LockScreen ----------
+const lockStyle = {
+  wrap:{minHeight:'100vh',background:'linear-gradient(135deg,#1F3A5F,#2E7D8F)',
+    display:'flex',alignItems:'center',justifyContent:'center',padding:'20px',
+    paddingTop:'calc(20px + env(safe-area-inset-top, 0px))',
+    paddingBottom:'calc(20px + env(safe-area-inset-bottom, 0px))'},
+  card:{background:'#fff',borderRadius:14,padding:'28px 22px',width:'100%',maxWidth:380,
+    boxShadow:'0 10px 30px rgba(0,0,0,.25)'},
+  icon:{fontSize:36,textAlign:'center',marginBottom:8},
+  title:{margin:'0 0 4px',color:'#1F3A5F',fontSize:22,textAlign:'center',fontWeight:600},
+  sub:{margin:'0 0 22px',color:'#5C6B7A',fontSize:13,textAlign:'center'},
+  group:{marginBottom:14},
+  err:{background:'#FCE8E6',color:'#C5221F',padding:'8px 12px',borderRadius:7,
+    fontSize:12,marginBottom:12,textAlign:'center'},
+  btn:{width:'100%',padding:'12px',border:0,borderRadius:8,fontSize:14,fontWeight:600,
+    cursor:'pointer',background:'#1F3A5F',color:'#fff',marginTop:6},
+  btnGhost:{width:'100%',padding:'10px',background:'transparent',color:'#1F3A5F',
+    border:'1px solid #1F3A5F',borderRadius:8,fontSize:13,cursor:'pointer',marginTop:8,fontWeight:500},
+  link:{display:'block',textAlign:'center',color:'#5C6B7A',fontSize:11,marginTop:14,
+    background:'none',border:0,cursor:'pointer',width:'100%'}
+};
+const LockScreen = ({mode, onUnlock, onSetup, onSkip, onReset, error, busy}) => {
+  const [pwd, setPwd] = useState('');
+  const [pwd2, setPwd2] = useState('');
+  const [view, setView] = useState(mode === 'setup' ? 'choose' : 'unlock');
+
+  const submit = e => {
+    e && e.preventDefault();
+    if(busy) return;
+    if(view === 'unlock'){ onUnlock(pwd); }
+    else if(view === 'create'){
+      if(pwd.length < 6){ alert('Password must be at least 6 characters.'); return; }
+      if(pwd !== pwd2){ alert('Passwords do not match.'); return; }
+      onSetup(pwd);
+    }
+  };
+
+  return (
+    <div style={lockStyle.wrap}>
+      <div style={lockStyle.card}>
+        <div style={lockStyle.icon}>🔒</div>
+        <h1 style={lockStyle.title}>Portfolio Hub</h1>
+
+        {view === 'choose' && (
+          <div>
+            <p style={lockStyle.sub}>Protect your data with a password.<br/>Your numbers stay encrypted in this browser.</p>
+            <button style={lockStyle.btn} onClick={()=>setView('create')}>Set up a password</button>
+            <button style={lockStyle.btnGhost} onClick={onSkip}>Skip — use without protection</button>
+            <p style={{...lockStyle.sub,marginTop:18,fontSize:11}}>
+              Strong: password derives an AES-256 key (PBKDF2, 200k iter). Data is encrypted at rest.
+              If you forget the password, data is unrecoverable.
+            </p>
+          </div>
+        )}
+
+        {view === 'create' && (
+          <form onSubmit={submit}>
+            <p style={lockStyle.sub}>Choose a password (6+ characters). Write it down somewhere safe — there's no recovery.</p>
+            {error && <div style={lockStyle.err}>{error}</div>}
+            <div style={lockStyle.group}>
+              <label style={{fontSize:11,color:'#5C6B7A',display:'block',marginBottom:4}}>Password</label>
+              <input type="password" autoFocus value={pwd} onChange={e=>setPwd(e.target.value)}
+                style={{width:'100%',padding:'10px 12px',border:'1px solid #E1E7EE',borderRadius:7,fontSize:15}} />
+            </div>
+            <div style={lockStyle.group}>
+              <label style={{fontSize:11,color:'#5C6B7A',display:'block',marginBottom:4}}>Confirm password</label>
+              <input type="password" value={pwd2} onChange={e=>setPwd2(e.target.value)}
+                style={{width:'100%',padding:'10px 12px',border:'1px solid #E1E7EE',borderRadius:7,fontSize:15}} />
+            </div>
+            <button style={lockStyle.btn} type="submit" disabled={busy}>{busy?'Encrypting…':'Set password & continue'}</button>
+            <button style={lockStyle.btnGhost} type="button" onClick={()=>setView('choose')}>Back</button>
+          </form>
+        )}
+
+        {view === 'unlock' && (
+          <form onSubmit={submit}>
+            <p style={lockStyle.sub}>Enter your password to unlock</p>
+            {error && <div style={lockStyle.err}>{error}</div>}
+            <div style={lockStyle.group}>
+              <input type="password" autoFocus value={pwd} onChange={e=>setPwd(e.target.value)}
+                placeholder="Password"
+                style={{width:'100%',padding:'12px',border:'1px solid #E1E7EE',borderRadius:7,fontSize:15}} />
+            </div>
+            <button style={lockStyle.btn} type="submit" disabled={busy||!pwd}>{busy?'Unlocking…':'Unlock'}</button>
+            <button style={lockStyle.link} type="button" onClick={onReset}>Forgot password — start over (erases all data)</button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ---------- App ----------
+const App = () => {
+  // Lock state
+  const [mode, setMode] = useState('loading'); // loading | setup | locked | unlocked | plain
+  const [cryptoKey, setCryptoKey] = useState(null);
+  const [salt, setSalt] = useState(null);
+  const [unlockErr, setUnlockErr] = useState('');
+  const [unlockBusy, setUnlockBusy] = useState(false);
+
+  const [tab, setTab] = useState('overview');
+  const [props, setProps] = useState([]);
+  const [maint, setMaint] = useState([]);
+  const [exp, setExp] = useState([]);
+  const [ohio, setOhio] = useState([]);
+  const [finances, setFinances] = useState(DEFAULT_FINANCES);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+
+  // Save status: 'saved' | 'unsaved' | 'saving' | 'error'
+  const [saveStatus, setSaveStatus] = useState('saved');
+
+  // First-time mode determination
+  useEffect(() => {
+    const hasVault = !!localStorage.getItem(VAULT_KEY);
+    const lockMode = localStorage.getItem(MODE_KEY);
+    if(hasVault){ setMode('locked'); return; }
+    if(lockMode === 'plain'){
+      const d = collectExistingPlain();
+      setProps(d.props||[]); setMaint(d.maint||[]); setExp(d.exp||[]); setOhio(d.ohio||[]);
+      setFinances({...DEFAULT_FINANCES, ...(d.finances||{})});
+      setSettings({...DEFAULT_SETTINGS, ...(d.settings||{}), netWorthTargets:{...DEFAULT_SETTINGS.netWorthTargets, ...((d.settings||{}).netWorthTargets||{})}});
+      setMode('plain'); return;
+    }
+    setMode('setup');
+  }, []);
+
+  // Detect changes → mark unsaved, then debounced auto-save
+  useEffect(() => {
+    if(mode !== 'plain' && mode !== 'unlocked') return;
+    setSaveStatus('unsaved');
+  }, [props, maint, exp, ohio, finances, settings]);
+
+  // Debounced auto-save when unsaved
+  useEffect(() => {
+    if(saveStatus !== 'unsaved') return;
+    const t = setTimeout(() => { doSave(); }, 1200);
+    return () => clearTimeout(t);
+  }, [saveStatus, props, maint, exp, ohio, finances, settings, mode, cryptoKey, salt]);
+
+  const doSave = async () => {
+    if(mode === 'plain'){
+      try {
+        setSaveStatus('saving');
+        save(KEYS.props, props); save(KEYS.maint, maint); save(KEYS.exp, exp);
+        save(KEYS.ohio, ohio); save(KEYS.finances, finances); save(KEYS.settings, settings);
+        setSaveStatus('saved');
+      } catch(e){ setSaveStatus('error'); }
+    } else if(mode === 'unlocked' && cryptoKey && salt){
+      try {
+        setSaveStatus('saving');
+        await saveVault(cryptoKey, salt, {props, maint, exp, ohio, finances, settings});
+        setSaveStatus('saved');
+      } catch(e){ console.error('vault save failed', e); setSaveStatus('error'); }
+    }
+  };
+  const handleSaveNow = () => { doSave(); };
+
+  // Lock handlers
+  const handleUnlock = async (password) => {
+    setUnlockErr(''); setUnlockBusy(true);
+    try {
+      const r = await unlockVault(password);
+      const d = r.data || {};
+      setProps(d.props||[]); setMaint(d.maint||[]); setExp(d.exp||[]); setOhio(d.ohio||[]);
+      setFinances({...DEFAULT_FINANCES, ...(d.finances||{})});
+      setSettings({...DEFAULT_SETTINGS, ...(d.settings||{}), netWorthTargets:{...DEFAULT_SETTINGS.netWorthTargets, ...((d.settings||{}).netWorthTargets||{})}});
+      setCryptoKey(r.key); setSalt(r.salt);
+      setMode('unlocked'); setTab('overview');
+    } catch(e){ setUnlockErr('Wrong password — try again.'); }
+    finally { setUnlockBusy(false); }
+  };
+  const handleSetup = async (password) => {
+    setUnlockBusy(true);
+    try {
+      // If existing plain data, migrate it into the vault
+      const existing = collectExistingPlain();
+      const data = {
+        props: existing.props||[], maint: existing.maint||[], exp: existing.exp||[],
+        ohio: existing.ohio||[], finances: {...DEFAULT_FINANCES, ...(existing.finances||{})},
+        settings: {...DEFAULT_SETTINGS, ...(existing.settings||{}), netWorthTargets:{...DEFAULT_SETTINGS.netWorthTargets, ...((existing.settings||{}).netWorthTargets||{})}}
+      };
+      const {key, salt: newSalt} = await createVault(password, data);
+      wipePlainKeys();
+      localStorage.setItem(MODE_KEY, 'vault');
+      setProps(data.props); setMaint(data.maint); setExp(data.exp); setOhio(data.ohio);
+      setFinances(data.finances); setSettings(data.settings);
+      setCryptoKey(key); setSalt(newSalt);
+      setMode('unlocked');
+    } catch(e){ alert('Setup failed: '+e.message); }
+    finally { setUnlockBusy(false); }
+  };
+  const handleSkip = () => {
+    const d = collectExistingPlain();
+    setProps(d.props||[]); setMaint(d.maint||[]); setExp(d.exp||[]); setOhio(d.ohio||[]);
+    setFinances({...DEFAULT_FINANCES, ...(d.finances||{})});
+    setSettings({...DEFAULT_SETTINGS, ...(d.settings||{}), netWorthTargets:{...DEFAULT_SETTINGS.netWorthTargets, ...((d.settings||{}).netWorthTargets||{})}});
+    localStorage.setItem(MODE_KEY, 'plain');
+    setMode('plain');
+  };
+  const handleLock = () => {
+    setProps([]); setMaint([]); setExp([]); setOhio([]);
+    setFinances(DEFAULT_FINANCES); setSettings(DEFAULT_SETTINGS);
+    setCryptoKey(null); setSalt(null); setUnlockErr('');
+    setMode('locked');
+  };
+  const handleEnableEncryption = async () => {
+    const password = prompt('Set a password (6+ chars). Write it down — no recovery.');
+    if(!password) return;
+    if(password.length < 6){ alert('Too short.'); return; }
+    const confirm2 = prompt('Re-enter password to confirm.');
+    if(password !== confirm2){ alert('Passwords do not match.'); return; }
+    try {
+      const data = {props, maint, exp, ohio, finances, settings};
+      const {key, salt: newSalt} = await createVault(password, data);
+      wipePlainKeys();
+      localStorage.setItem(MODE_KEY, 'vault');
+      setCryptoKey(key); setSalt(newSalt);
+      setMode('unlocked');
+      alert('Password protection enabled.');
+    } catch(e){ alert('Failed: '+e.message); }
+  };
+  const handleResetVault = () => {
+    if(confirm('Erase ALL data and the vault? This cannot be undone.')){
+      Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+      localStorage.removeItem(VAULT_KEY); localStorage.removeItem(MODE_KEY);
+      location.reload();
+    }
+  };
+
+
+  const exportData = () => {
+    const blob = new Blob([JSON.stringify({props,maint,exp,ohio,finances,settings},null,2)],{type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'portfolio_'+todayISO()+'.json';
+    a.click();
+  };
+  const importData = ev => {
+    const f = ev.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const d = JSON.parse(r.result);
+        if(d.props) setProps(d.props);
+        if(d.maint) setMaint(d.maint);
+        if(d.exp) setExp(d.exp);
+        if(d.ohio) setOhio(d.ohio);
+        if(d.finances) setFinances({...DEFAULT_FINANCES, ...d.finances});
+        if(d.settings) setSettings({...DEFAULT_SETTINGS, ...d.settings, netWorthTargets:{...DEFAULT_SETTINGS.netWorthTargets, ...(d.settings.netWorthTargets||{})}});
+        alert('Imported.');
+      } catch(e){ alert('Import failed: '+e.message); }
+    };
+    r.readAsText(f);
+    ev.target.value = '';
+  };
+
+  const exportXLSX = () => {
+    const wb = XLSX.utils.book_new();
+    const propRows = props.map(p => ({...p, ...calcProperty(p,settings)}));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(propRows), 'Properties');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(maint), 'Maintenance');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exp), 'Expenses');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ohio), 'Ohio Prospects');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(finances.savings||[]), 'Savings');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(finances.investments||[]), 'Investments');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(finances.retirement||[]), 'Retirement');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(finances.metals||[]), 'Metals');
+    const settingsRows = Object.entries(settings).filter(([k,v])=>typeof v !== 'object').map(([k,v])=>({key:k,value:v}));
+    Object.entries(settings.netWorthTargets||{}).forEach(([k,v])=>settingsRows.push({key:'target_'+k, value:v}));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(settingsRows), 'Settings');
+    XLSX.writeFile(wb, 'Portfolio_Hub_'+todayISO()+'.xlsx');
+  };
+
+  const importXLSX = ev => {
+    const f = ev.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = e => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, {type:'array'});
+        const sheet = name => wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name]) : null;
+        const stripCalc = p => {
+          const calcKeys = ['value','mort','equity','ltv','eff','mgmt','netCF','annualNOI','capRate','newPI','moSavings','closingCost','breakEven','refiDecision'];
+          const out = {...p};
+          // 'value' is a real input; don't strip it. Strip only the derived ones.
+          ['equity','ltv','eff','mgmt','netCF','annualNOI','capRate','newPI','moSavings','closingCost','breakEven','refiDecision','mort'].forEach(k=>delete out[k]);
+          return out;
+        };
+        const p = sheet('Properties'); if(p) setProps(p.map(stripCalc));
+        const m = sheet('Maintenance'); if(m) setMaint(m);
+        const ex = sheet('Expenses'); if(ex) setExp(ex);
+        const o = sheet('Ohio Prospects'); if(o) setOhio(o);
+        const sav = sheet('Savings'), inv = sheet('Investments'), ret = sheet('Retirement'), met = sheet('Metals');
+        if(sav||inv||ret||met) setFinances({savings:sav||[], investments:inv||[], retirement:ret||[], metals:met||[]});
+        const st = sheet('Settings');
+        if(st){
+          const nw = {...DEFAULT_SETTINGS, netWorthTargets:{...DEFAULT_SETTINGS.netWorthTargets}};
+          st.forEach(row => {
+            if(String(row.key||'').startsWith('target_')) nw.netWorthTargets[row.key.slice(7)] = +row.value;
+            else if(row.key in nw) nw[row.key] = +row.value;
+          });
+          setSettings(nw);
+        }
+        alert('Imported from Excel.');
+      } catch(e){ alert('Import failed: '+e.message); }
+    };
+    r.readAsArrayBuffer(f);
+    ev.target.value = '';
+  };
+
+  const loadSamples = () => {
+    setProps([
+      {nickname:'Sample 1', address:'123 Maple St', city:'Columbus', state:'OH', type:'SFR',
+       value:235000, mortgage:142000, rate:0.0625, yrsLeft:25, pi:1135, taxIns:425, hoa:0, rent:1850, opex:250},
+      {nickname:'Sample 2', address:'456 Oak Ave', city:'Cleveland', state:'OH', type:'SFR',
+       value:165000, mortgage:78000, rate:0.0425, yrsLeft:22, pi:525, taxIns:320, hoa:0, rent:1450, opex:180},
+      {nickname:'Sample 3', address:'789 Pine Ln', city:'Cincinnati', state:'OH', type:'Duplex',
+       value:275000, mortgage:205000, rate:0.075, yrsLeft:28, pi:1430, taxIns:510, hoa:0, rent:2400, opex:320}
+    ]);
+    setMaint([
+      {property:'Sample 1', item:'Roof', lastDate:'2010-08-01', lifespan:25, cost:8500},
+      {property:'Sample 1', item:'HVAC', lastDate:'2018-05-15', lifespan:15, cost:6500, vendor:'Comfort Pros'},
+      {property:'Sample 2', item:'Furnace', lastDate:'2014-11-30', lifespan:20, cost:3200},
+      {property:'Sample 3', item:'Exterior Paint', lastDate:'2019-06-01', lifespan:8, cost:4500}
+    ]);
+    setExp([
+      {date:'2026-04-01', property:'Sample 1', category:'Mortgage', vendor:'Chase', description:'April mortgage', amount:1135},
+      {date:'2026-04-01', property:'Sample 2', category:'Mortgage', vendor:'Wells Fargo', description:'April mortgage', amount:525},
+      {date:'2026-04-05', property:'Sample 1', category:'Insurance', vendor:'State Farm', description:'Q2 premium', amount:220},
+      {date:'2026-04-12', property:'Sample 2', category:'Repairs', vendor:'Quick Plumbing', description:'Leaky faucet', amount:145},
+      {date:'2026-04-22', property:'Sample 3', category:'Property Tax', vendor:'Cuyahoga Cty', description:'1H tax', amount:1850}
+    ]);
+    setOhio([
+      {status:'Watching', address:'100 Hot Lead Way', city:'Cleveland', price:95000, rent:1250, tax:1900, ins:850, opex:2200, dpct:0.25, rate:0.075, term:30},
+      {status:'Touring', address:'200 Equity Ln', city:'Dayton', price:119000, rent:1400, tax:1850, ins:950, opex:2400, dpct:0.20, rate:0.075, term:30}
+    ]);
+    setFinances({
+      savings:[
+        {institution:'Chase', type:'Checking', balance:8500, apy:0, notes:'Operating'},
+        {institution:'Marcus', type:'High-Yield Savings', balance:42000, apy:0.045, notes:'Emergency fund'},
+      ],
+      investments:[
+        {holding:'VTI', type:'ETF', account:'Fidelity Brokerage', shares:120, value:32400, costBasis:24000},
+        {holding:'AAPL', type:'Stock', account:'Fidelity Brokerage', shares:50, value:9500, costBasis:6500},
+      ],
+      retirement:[
+        {account:'401(k) – current employer', type:'401(k)', provider:'Empower', balance:185000, ytdContrib:9200},
+        {account:'Roth IRA', type:'Roth IRA', provider:'Vanguard', balance:62000, ytdContrib:3500}
+      ],
+      metals:[
+        {type:'Gold', form:'Coin', quantity:5, value:11500, notes:'1 oz Eagles'},
+        {type:'Silver', form:'Bar', quantity:200, value:6800, notes:'10 oz bars'}
+      ]
+    });
+    alert('Sample data loaded.');
+  };
+
+  const resetAll = () => {
+    if(confirm('This will wipe all data on this device. Continue?')){
+      Object.values(KEYS).forEach(k=>localStorage.removeItem(k));
+      location.reload();
+    }
+  };
+
+  return (
+    <div id="root-inner" style={{display:'flex',flexDirection:'column',minHeight:'100vh'}}>
+      <Header />
+      <div className="layout">
+        <SideNav tab={tab} setTab={setTab} />
+        <main>
+          {tab==='overview'   && <Overview props={props} maint={maint} finances={finances} settings={settings} setTab={setTab} />}
+          {tab==='properties' && <Properties props={props} setProps={setProps} settings={settings} />}
+          {tab==='maint'      && <Maint maint={maint} setMaint={setMaint} props={props} />}
+          {tab==='expenses'   && <Expenses exp={exp} setExp={setExp} props={props} />}
+          {tab==='refi'       && <Refi props={props} settings={settings} />}
+          {tab==='ohio'       && <Ohio ohio={ohio} setOhio={setOhio} settings={settings} />}
+          {tab==='finances'   && <Finances finances={finances} setFinances={setFinances} />}
+          {tab==='networth'   && <NetWorth props={props} finances={finances} settings={settings} />}
+          {tab==='settings'   && <SettingsTab settings={settings} setSettings={setSettings}
+            exportData={exportData} importData={importData}
+            exportXLSX={exportXLSX} importXLSX={importXLSX}
+            loadSamples={loadSamples} resetAll={resetAll} />}
+        </main>
+      </div>
+      <BottomNav tab={tab} setTab={setTab} />
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
