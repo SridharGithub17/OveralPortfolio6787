@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-export const SettingsTab = ({settings, setSettings, exportData, importData, exportXLSX, importXLSX, loadSamples, resetAll, mode, onLock, onEnableEncryption, onChangePassword}) => {
+export const SettingsTab = ({settings, setSettings, exportData, importData, exportXLSX, importXLSX, loadSamples, resetAll, mode, onLock, onEnableEncryption, onChangePassword, onBackupDatabase}) => {
   const [s, setS] = useState(settings);
+  const [backupStatus, setBackupStatus] = useState('');
   useEffect(()=>setS(settings),[settings]);
   const updT = (k,v) => setS({...s, netWorthTargets:{...s.netWorthTargets, [k]:+v}});
+  const runBackup = async () => {
+    setBackupStatus('Creating SQLite backup…');
+    try {
+      const result = await onBackupDatabase();
+      setBackupStatus(`SQLite backup created: ${result.database}`);
+    } catch (error) {
+      setBackupStatus(`SQLite backup failed: ${error.message}`);
+    }
+  };
 
   const fields = [
     {k:'marketRate30',l:'Current 30-yr mortgage rate',pct:true},
@@ -60,6 +70,11 @@ export const SettingsTab = ({settings, setSettings, exportData, importData, expo
           <button className="ghost" onClick={()=>document.getElementById('imp-json').click()}>Import JSON</button>
           <input id="imp-json" type="file" accept=".json" style={{display:'none'}} onChange={importData} />
         </div>
+        <h3>SQLite backup</h3>
+        <div className="toolbar">
+          <button className="ghost" onClick={runBackup}>Back up SQLite DB</button>
+        </div>
+        {backupStatus && <div className="small" style={{marginTop:8}}>{backupStatus}</div>}
       </div>
 
       <div className="card">

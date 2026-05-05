@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { fmtMoney, todayISO } from './calculations.js';
 import { KPI } from './KPI.jsx';
@@ -88,15 +88,13 @@ const classifyImportSource = (rows = []) => {
   return 'generic';
 };
 
-export const Expenses = ({exp, setExp, props}) => {
+export const Expenses = ({exp, setExp, props, baselaneExpenses = [], baselaneReport = null, onImportBaselaneCsv}) => {
   const [filterProp, setFP] = useState('');
   const [filterCat, setFC] = useState('');
   const importInputRef = useRef(null);
   const [syncMode, setSyncMode] = useState('replace');
   const [syncStatus, setSyncStatus] = useState('');
-  const update = (i,k,v) => { const n=[...exp]; n[i]={...n[i],[k]:v}; setExp(n); };
-  const add = () => setExp([...exp, {date:todayISO(),property:'',category:'Mortgage',amount:0}]);
-  const del = i => { const n=[...exp]; n.splice(i,1); setExp(n); };
+  const [isImporting, setIsImporting] = useState(false);
   const propNames = [...new Set(props.map(p=>p.nickname||p.address).filter(Boolean))];
   const triggerSpreadsheetImport = () => importInputRef.current?.click();
 
@@ -109,27 +107,29 @@ export const Expenses = ({exp, setExp, props}) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      window.alert('Upload a Baselane CSV file. Excel files are no longer used for this import flow.');
+      event.target.value = '';
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
-        const workbook = XLSX.read(reader.result, { type: 'array' });
-        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(firstSheet || {}, { defval: '' });
-        const source = classifyImportSource(rows);
-        const imported = rows
-          .map((row) => normalizeImportedExpense(row, propNames))
-          .filter((row) => row.date || row.property || row.vendor || row.description || row.amount);
-        if (!imported.length) {
-          window.alert('No expense rows were found in that spreadsheet.');
-        } else {
-          setExp(syncMode === 'append' ? [...exp, ...imported] : imported);
-          setSyncStatus(`Imported ${imported.length} ${source === 'baselane-transactions' ? 'transaction' : 'expense'} rows from ${file.name} using ${syncMode === 'append' ? 'append' : 'replace'} mode.`);
-        }
+        setIsImporting(true);
+        const result = await onImportBaselaneCsv({
+          fileName: file.name,
+          content: String(reader.result || ''),
+          importMode: syncMode,
+        });
+        setSyncStatus(`Imported ${result.imported} Baselane CSV rows from ${file.name} into the backend using ${syncMode === 'append' ? 'append' : 'replace'} mode.`);
       } catch (error) {
-        window.alert(`Failed to import Baselane spreadsheet: ${error.message}`);
+        window.alert(`Failed to import Baselane CSV: ${error.message}`);
+      } finally {
+        setIsImporting(false);
       }
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsText(file);
     event.target.value = '';
   };
 
@@ -147,6 +147,10 @@ export const Expenses = ({exp, setExp, props}) => {
   const total = Object.values(catTotals).reduce((s,v)=>s+v,0);
 
   const sorted = [...filtered].map((e,i)=>({...e,_orig:exp.indexOf(e)})).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const reportSummary = baselaneReport?.summary;
+  const reportByProperty = baselaneReport?.byProperty || [];
+  const reportByCategory = baselaneReport?.byCategory || [];
+  const reportMonthly = baselaneReport?.monthly || [];
 
   return (
     <div>
@@ -155,8 +159,8 @@ export const Expenses = ({exp, setExp, props}) => {
         <h3>Baselane import</h3>
         <div className="toolbar">
           <button className="primary" onClick={runBaselaneOnlineSync}>Connect Baselane online</button>
-          <button className="ghost" onClick={triggerSpreadsheetImport}>Import Baselane spreadsheet</button>
-          <input ref={importInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={importBaselaneSpreadsheet} style={{display:'none'}} />
+          <button className="ghost" onClick={triggerSpreadsheetImport} disabled={isImporting}>{isImporting ? 'Importing CSV…' : 'Import Baselane CSV'}</button>
+          <input ref={importInputRef} type="file" accept=".csv,text/csv" onChange={importBaselaneSpreadsheet} style={{display:'none'}} />
         </div>
         <div className="row cols-3" style={{marginTop:12}}>
           <label>
@@ -167,7 +171,7 @@ export const Expenses = ({exp, setExp, props}) => {
             </select>
           </label>
         </div>
-        <div className="small" style={{marginTop:8}}>Click Connect Baselane online to open Baselane login, then export the Transactions tab from Baselane and upload that spreadsheet here. Imported rows load into this page for further calculations. Expected headers include {BASELANE_BANK_HEADERS.join(', ')}.</div>
+        <div className="small" style={{marginTop:8}}>Click Connect Baselane online to open Baselane login, then export the Transactions tab from Baselane as CSV and upload it here. Imported rows are saved into a dedicated SQLite Baselane table using the same CSV columns as the source file and become the source for this expenses page and reporting. Expected headers include {BASELANE_BANK_HEADERS.join(', ')}.</div>
         <div className="card" style={{marginTop:12,padding:12}}>
           <h4 style={{marginTop:0}}>Baselane online connections</h4>
           {BASELANE_SAMPLE_CONNECTIONS.map((connection)=>(
@@ -181,14 +185,19 @@ export const Expenses = ({exp, setExp, props}) => {
         </div>
         {!!syncStatus && <div className="small" style={{marginTop:10}}>{syncStatus}</div>}
       </div>
-      <div className="row cols-3">
+      <div className="grid">
+        <KPI label="Baselane rows" value={String(baselaneExpenses.length)} />
+        <KPI label="Baselane expense total" value={fmtMoney(reportSummary?.totalExpenses || 0)} />
+        <KPI label="Baselane income total" value={fmtMoney(reportSummary?.totalIncome || 0)} />
+        <KPI label="Baselane net" value={fmtMoney(reportSummary?.netAmount || 0)} />
+      </div>
+      <div className="row cols-2">
         <select value={filterProp} onChange={e=>setFP(e.target.value)}>
           <option value="">All properties</option>{propNames.map(p=><option key={p}>{p}</option>)}
         </select>
         <select value={filterCat} onChange={e=>setFC(e.target.value)}>
           <option value="">All categories</option>{CATS.map(c=><option key={c}>{c}</option>)}
         </select>
-        <button className="primary" onClick={add}>+ Add expense</button>
       </div>
       <div className="grid">
         <KPI label="MTD" value={fmtMoney(sumMTD)} />
@@ -197,29 +206,23 @@ export const Expenses = ({exp, setExp, props}) => {
         <KPI label="Entries" value={filtered.length} />
       </div>
       {filtered.length === 0
-        ? <div className="card empty">No expenses match. Add an entry to start tracking.</div>
+        ? <div className="card empty">No imported Baselane expenses match the selected filters.</div>
         : <div className="card" style={{padding:8}}>
             <table className="responsive">
               <thead><tr>
-                <th>Date</th><th>Property</th><th>Category</th><th>Vendor</th><th>Description</th><th>Amount</th><th></th>
+                <th>Date</th><th>Property</th><th>Category</th><th>Vendor</th><th>Description</th><th>Amount</th>
               </tr></thead>
-              <tbody>{sorted.map(e=>(
-                <tr key={e._orig}>
-                  <td data-l="Date"><input type="date" value={e.date||''} onChange={ev=>update(e._orig,'date',ev.target.value)} /></td>
-                  <td data-l="Property"><input list="exp-prop-opts" value={e.property||''} onChange={ev=>update(e._orig,'property',ev.target.value)} /></td>
-                  <td data-l="Category">
-                    <select value={e.category||'Other'} onChange={ev=>update(e._orig,'category',ev.target.value)}>
-                      {CATS.map(c=><option key={c}>{c}</option>)}
-                    </select>
-                  </td>
-                  <td data-l="Vendor"><input value={e.vendor||''} onChange={ev=>update(e._orig,'vendor',ev.target.value)} /></td>
-                  <td data-l="Description"><input value={e.description||''} onChange={ev=>update(e._orig,'description',ev.target.value)} /></td>
-                  <td data-l="Amount" className="num"><input type="number" value={e.amount||''} onChange={ev=>update(e._orig,'amount',ev.target.value)} /></td>
-                  <td><button className="danger-link" onClick={()=>del(e._orig)}>×</button></td>
+              <tbody>{sorted.map((e, index)=>(
+                <tr key={`${e.date || 'no-date'}-${e.property || 'no-property'}-${e.vendor || 'no-vendor'}-${index}`}>
+                  <td data-l="Date">{e.date || ''}</td>
+                  <td data-l="Property">{e.property || ''}</td>
+                  <td data-l="Category">{e.category || 'Other'}</td>
+                  <td data-l="Vendor">{e.vendor || ''}</td>
+                  <td data-l="Description">{e.description || ''}</td>
+                  <td data-l="Amount" className="num">{fmtMoney(Number(e.amount || 0))}</td>
                 </tr>
               ))}</tbody>
             </table>
-            <datalist id="exp-prop-opts">{propNames.map(p=>(<option key={p} value={p}/>))}</datalist>
           </div>}
 
       {total > 0 && (
@@ -233,6 +236,67 @@ export const Expenses = ({exp, setExp, props}) => {
             </div>
           ))}
         </div>
+      )}
+
+      {!!baselaneExpenses.length && (
+        <>
+          <div className="card">
+            <h3>Baselane reporting by property</h3>
+            {reportByProperty.map((row) => (
+              <div className="alloc-row" key={row.property || 'unassigned-property'}>
+                <div className="name">{row.property || 'Unassigned'}</div>
+                <div className="val">{fmtMoney(row.expenses || 0)}</div>
+                <div className="pct">Income {fmtMoney(row.income || 0)} · Net {fmtMoney(row.netAmount || 0)}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="card">
+            <h3>Baselane reporting by category</h3>
+            {reportByCategory.map((row) => (
+              <div className="alloc-row" key={row.category}>
+                <div className="name">{row.category}</div>
+                <div className="val">{fmtMoney(row.expenses || 0)}</div>
+                <div className="pct">Income {fmtMoney(row.income || 0)} · Net {fmtMoney(row.netAmount || 0)}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="card" style={{padding:8}}>
+            <h3 style={{padding:'0 8px'}}>Imported Baselane records</h3>
+            <table className="responsive">
+              <thead><tr>
+                <th>Account</th><th>Date</th><th>Merchant</th><th>Description</th><th>Amount</th><th>Type</th><th>Category</th><th>Sub-category</th><th>Property</th><th>Unit</th><th>Notes</th>
+              </tr></thead>
+              <tbody>{baselaneExpenses.map((row) => (
+                <tr key={row.id}>
+                  <td data-l="Account">{row.account || ''}</td>
+                  <td data-l="Date">{row.date || ''}</td>
+                  <td data-l="Merchant">{row.merchant || ''}</td>
+                  <td data-l="Description">{row.description || ''}</td>
+                  <td data-l="Amount" className="num">{fmtMoney(Number(row.amount || 0))}</td>
+                  <td data-l="Type">{row.type || ''}</td>
+                  <td data-l="Category">{row.category || ''}</td>
+                  <td data-l="Sub-category">{row.subCategory || ''}</td>
+                  <td data-l="Property">{row.property || ''}</td>
+                  <td data-l="Unit">{row.unit || ''}</td>
+                  <td data-l="Notes">{row.notes || ''}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+
+          <div className="card">
+            <h3>Baselane monthly trend</h3>
+            {reportMonthly.map((row) => (
+              <div className="alloc-row" key={row.month}>
+                <div className="name">{row.month}</div>
+                <div className="val">{fmtMoney(row.expenses || 0)}</div>
+                <div className="pct">Income {fmtMoney(row.income || 0)} · Net {fmtMoney(row.netAmount || 0)} · {row.recordCount} rows</div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 # Real Estate Portfolio Project - Run and Maintenance Guide
-
+If you want both together, use npm run dev:full
 ## Overview
 
 This project is a React frontend powered by Vite and a Node.js backend that stores application state in SQLite.
@@ -178,11 +178,18 @@ If the frontend shows a backend connection error, verify that [`server.js`](serv
 
 Back up [`portfolio.db`](portfolio.db) regularly.
 
-Recommended approach:
+Project backup options:
 
-- Stop the backend server
-- Copy [`portfolio.db`](portfolio.db) to a backup location
-- Restart the backend
+- Run [`npm run backup:db`](package.json:9) to create a timestamped copy in [`backups`](backups)
+- Use the **Back up SQLite DB** button in [`SettingsTab.jsx`](SettingsTab.jsx) to trigger the backend backup route
+
+The backup utility script is [`backup-db.js`](backup-db.js).
+
+Generated files include:
+
+- a timestamped copy of [`portfolio.db`](portfolio.db)
+- [`portfolio.db-wal`](portfolio.db-wal), if present
+- [`portfolio.db-shm`](portfolio.db-shm), if present
 
 You may also back up exported JSON or Excel from the settings screen in [`SettingsTab.jsx`](SettingsTab.jsx).
 

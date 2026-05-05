@@ -5,6 +5,9 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_FINANCES,
   fetchState,
+  fetchBaselaneExpenses,
+  backupDatabase,
+  importBaselaneCsv,
   persistState,
   resetState,
   DEFAULT_STATE,
@@ -44,6 +47,8 @@ export default function App() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [saveStatus, setSaveStatus] = useState('saved');
   const [backendState, setBackendState] = useState(DEFAULT_STATE);
+  const [baselaneExpenses, setBaselaneExpenses] = useState([]);
+  const [baselaneReport, setBaselaneReport] = useState(null);
 
   useEffect(() => {
     const init = async () => {
@@ -64,6 +69,9 @@ export default function App() {
         setOhio(state.ohio || []);
         setFinances({ ...DEFAULT_FINANCES, ...(state.finances || {}) });
         setSettings(mergeSettings(state.settings));
+        const baselaneData = await fetchBaselaneExpenses();
+        setBaselaneExpenses(baselaneData.records || []);
+        setBaselaneReport(baselaneData.report || null);
         setAuthMode('signup');
         setMode('plain');
       } catch (e) {
@@ -291,6 +299,8 @@ export default function App() {
     e.target.value = '';
   };
 
+  const handleBackupDatabase = async () => backupDatabase();
+
   const loadSamples = () => {
     if (window.confirm('Load sample data? This will overwrite current data.')) {
       setProps([
@@ -340,6 +350,29 @@ export default function App() {
         setUnlockErr('Reset failed.');
       });
     }
+  };
+
+  const handleBaselaneImport = async ({ fileName, content, importMode }) => {
+    const result = await importBaselaneCsv({ fileName, content, importMode });
+    setBaselaneExpenses(result.records || []);
+    setBaselaneReport(result.report || null);
+    setExp((prev) => {
+      const importedExpenses = (result.records || []).map((record) => ({
+        date: record.date,
+        property: record.property,
+        category: record.category || 'Other',
+        vendor: record.merchant,
+        description: record.description || record.notes,
+        amount: Number(record.amount || 0),
+      }));
+
+      if (importMode === 'append') {
+        return [...prev, ...importedExpenses];
+      }
+
+      return importedExpenses;
+    });
+    return result;
   };
 
   const lockNow = () => {
@@ -420,7 +453,16 @@ export default function App() {
       case 'maint':
         return <Maint maint={maint} setMaint={setMaint} props={props} />;
       case 'expenses':
-        return <Expenses exp={exp} setExp={setExp} props={props} />;
+        return (
+          <Expenses
+            exp={exp}
+            setExp={setExp}
+            props={props}
+            baselaneExpenses={baselaneExpenses}
+            baselaneReport={baselaneReport}
+            onImportBaselaneCsv={handleBaselaneImport}
+          />
+        );
       case 'refi':
         return <Refi props={props} settings={settings} />;
       case 'ohio':
@@ -438,6 +480,7 @@ export default function App() {
             importData={importData}
             exportXLSX={exportXLSX}
             importXLSX={importXLSX}
+            onBackupDatabase={handleBackupDatabase}
             loadSamples={loadSamples}
             resetAll={resetAll}
             mode={mode}

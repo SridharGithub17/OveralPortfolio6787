@@ -6,6 +6,7 @@
     "dev": "vite",
     "server": "node server.js",
     "dev:full": "start cmd /k node server.js && vite",
+    "backup:db": "node backup-db.js",
     "build": "vite build",
     "preview": "vite preview"
   },

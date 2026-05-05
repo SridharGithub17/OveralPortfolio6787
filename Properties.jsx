@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { fmtMoney, fmtPct, fmtPct1, calcProperty, refiPill } from './calculations.js';
 import { KPI } from './KPI.jsx';
 import { Field } from './BasicComponents.jsx';
+import { refreshPropertyDetails } from './storage.js';
 
 const createProperty = () => ({
   nickname: 'New Property',
@@ -18,7 +19,34 @@ const createProperty = () => ({
   hoa: 0,
   rent: 0,
   opex: 0,
+  enrichment: {
+    marketValue: null,
+    propertyTax: null,
+    schoolDistrict: '',
+    lastUpdated: '',
+    sources: {},
+    error: '',
+  },
 });
+
+const formatUpdatedAt = (value) => {
+  if (!value) return 'Never refreshed';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Never refreshed' : date.toLocaleString();
+};
+
+const EnrichmentRow = ({ label, value, source, onRefresh, loading }) => (
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
+    <div>
+      <div style={{ fontWeight: 600 }}>{label}</div>
+      <div>{value}</div>
+      <div className="small" style={{ marginTop: 4 }}>{source || 'Public-source estimate'}</div>
+    </div>
+    <button className="ghost" type="button" onClick={onRefresh} disabled={loading}>
+      {loading ? 'Refreshing…' : 'Refresh'}
+    </button>
+  </div>
+);
 
 const getPropertyTitle = (property) => property.nickname || property.address || 'New property';
 
@@ -81,10 +109,35 @@ const PropertyList = ({ props, settings, onSelect, onAdd }) => {
 
 const PropertyDetail = ({ property, index, settings, onBack, onChange, onDelete }) => {
   const metrics = useMemo(() => calcProperty(property, settings), [property, settings]);
+  const [refreshingField, setRefreshingField] = useState('');
+  const enrichment = property.enrichment || {};
 
   const setField = (key, value, type = 'text') => {
     const nextValue = type === 'number' ? toNumber(value) : value;
     onChange(index, key, nextValue);
+  };
+
+  const handleRefresh = async (fieldKey) => {
+    setRefreshingField(fieldKey);
+    try {
+      const response = await refreshPropertyDetails(property);
+      const nextEnrichment = {
+        ...(property.enrichment || {}),
+        ...(response.enrichment || {}),
+        error: '',
+      };
+      onChange(index, 'enrichment', nextEnrichment);
+      if (fieldKey === 'marketValue' && response.enrichment?.marketValue) {
+        onChange(index, 'value', response.enrichment.marketValue);
+      }
+    } catch (error) {
+      onChange(index, 'enrichment', {
+        ...(property.enrichment || {}),
+        error: error.message || 'Refresh failed',
+      });
+    } finally {
+      setRefreshingField('');
+    }
   };
 
   return (
@@ -135,6 +188,42 @@ const PropertyDetail = ({ property, index, settings, onBack, onChange, onDelete 
         <KPI label="Mo CF" value={fmtMoney(metrics.netCF)} valueColor={metrics.netCF < 0 ? 'var(--red)' : 'var(--green)'} />
         <KPI label="Annual NOI" value={fmtMoney(metrics.annualNOI)} />
         <KPI label="Cap Rate" value={fmtPct(metrics.capRate)} />
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', marginBottom: 12, flexWrap: 'wrap' }}>
+          <div>
+            <h3 style={{ margin: 0 }}>Online property details</h3>
+            <div className="small" style={{ marginTop: 4 }}>Approximate public-source data. Last updated: {formatUpdatedAt(enrichment.lastUpdated)}</div>
+            <div className="small" style={{ marginTop: 4 }}>If refresh returns a 404, restart the backend server so [`server.js`](server.js:1) reloads the new [`/api/property-details/refresh`](server.js:658) route.</div>
+          </div>
+        </div>
+
+        <EnrichmentRow
+          label="Current market value"
+          value={enrichment.marketValue ? fmtMoney(enrichment.marketValue) : 'Not available'}
+          source={enrichment.sources?.marketValue}
+          loading={refreshingField === 'marketValue'}
+          onRefresh={() => handleRefresh('marketValue')}
+        />
+        <EnrichmentRow
+          label="Property tax"
+          value={enrichment.propertyTax ? `${fmtMoney(enrichment.propertyTax)}/yr` : 'Not available'}
+          source={enrichment.sources?.propertyTax}
+          loading={refreshingField === 'propertyTax'}
+          onRefresh={() => handleRefresh('propertyTax')}
+        />
+        <EnrichmentRow
+          label="School district"
+          value={enrichment.schoolDistrict || 'Not available'}
+          source={enrichment.sources?.schoolDistrict}
+          loading={refreshingField === 'schoolDistrict'}
+          onRefresh={() => handleRefresh('schoolDistrict')}
+        />
+
+        {enrichment.error ? (
+          <div className="small" style={{ color: 'var(--red)', marginTop: 12 }}>{enrichment.error}</div>
+        ) : null}
       </div>
 
       <div className="card">

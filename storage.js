@@ -32,7 +32,20 @@ export const DEFAULT_STATE = {
   settings: DEFAULT_SETTINGS,
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE || `${window.location.protocol}//${window.location.hostname}:3001/api`;
+const configuredApiBase = import.meta.env.VITE_API_BASE;
+
+const detectApiBase = () => {
+  if (configuredApiBase) return configuredApiBase;
+
+  const currentPort = window.location.port;
+  if (currentPort === '3001') {
+    return `${window.location.protocol}//${window.location.host}/api`;
+  }
+
+  return `${window.location.protocol}//${window.location.hostname}:3001/api`;
+};
+
+const API_BASE = detectApiBase();
 
 export const mergeSettings = (incoming = {}) => ({
   ...DEFAULT_SETTINGS,
@@ -58,13 +71,14 @@ export const normalizeState = (incoming = {}) => ({
 });
 
 async function api(path, options = {}) {
+  const url = `${API_BASE}${path}`;
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
   });
 
   if (!res.ok) {
-    throw new Error(`Backend request failed (${res.status})`);
+    throw new Error(`Backend request failed (${res.status}) for ${url}`);
   }
 
   return res.json();
@@ -72,6 +86,28 @@ async function api(path, options = {}) {
 
 export async function fetchState() {
   return normalizeState(await api('/state'));
+}
+
+export async function fetchBaselaneExpenses() {
+  return api('/baselane-expenses');
+}
+
+export async function importBaselaneCsv({ fileName, content, importMode }) {
+  return api('/baselane-expenses/import', {
+    method: 'POST',
+    body: JSON.stringify({ fileName, content, importMode }),
+  });
+}
+
+export async function backupDatabase() {
+  return api('/backup-db', { method: 'POST' });
+}
+
+export async function refreshPropertyDetails(property) {
+  return api('/property-details/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ property }),
+  });
 }
 
 export function readLegacyBrowserState() {
